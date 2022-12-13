@@ -12,6 +12,7 @@ const App = () => {
     const prompt = e.target.prompt.value
     setLoading(true)
     const result = await api.post("predict", { prompt: prompt })
+    debugger
     if (result.data.person.includes("yes")) {
       setImagePosition({ x: personPosition.x, y: personPosition.y })
     }
@@ -40,7 +41,8 @@ const App = () => {
         <img
           key={idx}
           src={url}
-          className="absolute fall-from-top animate__animated animate__bounce bottom-0 right-[300px] w-[300px] h-[300px]"
+          style={{left: `${imagePosition.x}px`, bottom: `${imagePosition.y}px`}}
+          className="absolute fall-from-top animate__animated animate__bounce w-[300px] h-[300px]"
         />
       )
     })
