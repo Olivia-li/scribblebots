@@ -7,14 +7,14 @@ class ApplicationController < ActionController::Base
     replicate = Replicate::Client.new(token: ENV["REPLICATE_API_KEY"])
     model = replicate.models("stability-ai/stable-diffusion")
     url = model.predict(prompt: getPrompt(prompt))[0]
-    render json: { url: remove_background(url), person: attach_to_person?(prompt)}
+    render json: { url: remove_background(url), person: "yes"}
   end
 
-  def attach_to_person?(item)
-    openai_client = OpenAI::Client.new(api_key: ENV["OPENAI_API_KEY"], default_engine: "ada")
-    result = openai_client.completions(prompt: "Only answer with yes or no. Could a strong human hold a #{item} their hand and lift very easily", max_tokens: 5)
-    return result
-  end
+  # def attach_to_person?(item)
+  #   openai_client = OpenAI::Client.new(api_key: ENV["OPENAI_API_KEY"], default_engine: "ada")
+  #   result = openai_client.completions(prompt: "Only answer with yes or no. Could a strong human hold a #{item} their hand and lift very easily", max_tokens: 5)
+  #   return result
+  # end
 
   def remove_background(url)
     replicate = Replicate::Client.new(token: ENV["REPLICATE_API_KEY"])

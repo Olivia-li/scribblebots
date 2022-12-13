@@ -7,7 +7,7 @@ gem "pg", "~> 1.1"
 gem "puma", "~> 5.0"
 gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 gem 'vite_rails'
-gem 'replicate-api', "~> 0.2.0"
+gem 'replicate-api', "~> 0.2.2"
 gem 'dotenv-rails'
 gem 'openai'
 
