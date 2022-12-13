@@ -2,8 +2,8 @@ import React from "react";
 
 const App = () => {
   return (
-    <div className="flex justify-center align-middle">
-      <h1 className="text-2xl">TEMPLATE</h1>
+    <div className="bg-sky-100 w-screen min-h-screen">
+      
     </div>
   );
 };
