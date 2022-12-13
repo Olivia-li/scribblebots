@@ -1,0 +1,18 @@
+<!DOCTYPE html>                                                                      
+<html> 
+  <head>
+    <title>Template</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    
+    <%= vite_stylesheet_tag 'application.css', media: 'all' %>
+    <%= vite_client_tag %>
+    <%= vite_javascript_tag 'application.jsx' %>
+
+  </head>
+
+  <body>
+    <%= yield %>
+  </body>
+</html>
