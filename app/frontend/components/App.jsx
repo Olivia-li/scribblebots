@@ -1,19 +1,48 @@
 import React from "react"
 import api from "../utils/api"
+import "animate.css"
 
 const App = () => {
   const [images, setImages] = React.useState([])
+  const [imagePosition, setImagePosition] = React.useState({ x: 0, y: 0 })
+  const [loading, setLoading] = React.useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
     const prompt = e.target.prompt.value
+    setLoading(true)
     const result = await api.post("predict", { prompt: prompt })
+    if (result.data.person.includes("yes")) {
+      setImagePosition({ x: personPosition.x, y: personPosition.y })
+    }
+    setLoading(false)
     setImages([...images, result.data.url])
+  }
+
+  const personPosition = {
+    y: 0,
+    x: 1500,
+  }
+
+  const catPosition = {
+    y: 725,
+    x: 500,
+  }
+
+  const treePosition = {
+    y: 0,
+    x: 300,
   }
 
   function renderImages() {
     return images.map((url, idx) => {
-      return <img key={idx} src={url} />
+      return (
+        <img
+          key={idx}
+          src={url}
+          className="absolute fall-from-top animate__animated animate__bounce bottom-0 right-[300px] w-[300px] h-[300px]"
+        />
+      )
     })
   }
 
@@ -25,16 +54,24 @@ const App = () => {
       className="bg-sky-100 w-screen min-h-screen bg-no-repeat bg-cover bg-center"
     >
       <form onSubmit={handleSubmit} className="absolute m-2">
-        <input required name="prompt" className="p-3 bg-gray-100" type="text" />
+        <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded" type="text" />
+        {loading && <p>Loading...</p>}
       </form>
       {images.length > 0 && renderImages()}
       <img
+        style={{ left: `${catPosition.x}px`, bottom: `${catPosition.y}px` }}
         src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/cat.png"
-        className="absolute bottom-[725px] left-[500px] w-[120px] h-[120px]"
+        className="absolute w-[120px] h-[120px]"
       />
       <img
+        style={{ left: `${treePosition.x}px`, bottom: `${treePosition.y}px` }}
         src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png"
-        className="absolute bottom-0 left-[300px] h-[750px]"
+        className="absolute h-[750px]"
+      />
+      <img
+        style={{ left: `${personPosition.x}px`, bottom: `${personPosition.y}px` }}
+        src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/figure.png"
+        className={`absolute`}
       />
     </div>
   )

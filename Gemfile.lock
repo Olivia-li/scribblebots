@@ -110,6 +110,7 @@ GEM
     nio4r (2.5.8)
     nokogiri (1.13.9-arm64-darwin)
       racc (~> 1.4)
+    openai (0.2.0)
     pg (1.4.5)
     pry (0.14.1)
       coderay (~> 1.1)
@@ -176,6 +177,7 @@ PLATFORMS
 DEPENDENCIES
   debug
   dotenv-rails
+  openai
   pg (~> 1.1)
   pry
   puma (~> 5.0)
