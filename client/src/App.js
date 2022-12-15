@@ -1,11 +1,24 @@
-import React from "react"
+import React, { useEffect } from "react"
 import axios from 'axios'
 import "animate.css"
+import { w3cwebsocket as W3CWebSocket } from "websocket";
+
+const client = new W3CWebSocket('ws://localhost:8000');
 
 const App = () => {
   const [images, setImages] = React.useState([])
   const [imagePosition, setImagePosition] = React.useState({ x: 0, y: 0 })
   const [loading, setLoading] = React.useState(false)
+
+  useEffect(() => {
+    client.onopen = () => {
+      console.log('WebSocket Client Connected');
+    };
+    client.onmessage = (message) => {
+      const dataFromServer = JSON.parse(message.data);
+      console.log(dataFromServer);
+    };
+  })
 
   async function handleSubmit(e) {
     e.preventDefault()

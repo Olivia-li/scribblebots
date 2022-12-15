@@ -3,11 +3,39 @@ dotenv.config()
 import express from 'express';
 import bodyParser from 'body-parser'
 import Replicate from 'replicate-js';
+import { server as webSocketServer } from 'websocket';
+import http from 'http'
 
 const app = express();
 const port = process.env.PORT || 3001;
 
 const replicate = new Replicate({token: process.env.REPLICATE_API_KEY });
+
+// Spinning the http server and the websocket server.
+const server = http.createServer();
+server.listen(8000);
+const wsServer = new webSocketServer({
+  httpServer: server
+})
+
+wsServer.on('request', function(request) {
+  console.log((new Date()) + ' Recieved a new connection from origin ' + request.origin + '.');
+  // You can rewrite this part of the code to accept only the requests from allowed origin
+  const connection = request.accept(null, request.origin);
+  connection.on('message', function(message) {
+    if (message.type === 'utf8') {
+      const dataFromClient = message;
+      console.log(JSON.stringify(dataFromClient.utf8Data));
+    }
+  });
+
+  // user disconnected
+  connection.on('close', function(connection) {
+    console.log((new Date()) + " Peer disconnected.");
+    console.log(JSON.stringify(connection));
+  });
+});;
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
