@@ -57,6 +57,41 @@ function getPrompt(prompt) {
   return `Tiny cute 3D low poly clay model ${prompt}, soft smooth lighting, soft colors, pastel color background, center long shot, 100mm lens, 3d blender render, polycount, modular constructivism, physically based rendering, high definition quality, at 4:5, 8k.`
 }
 
+/*
+app.post("/askgpt", async (req, res) => {
+  const API_KEY = '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';
+  const API_ENDPOINT = 'https://api.openai.com/v1/completions';
+  
+  const prompt = 'The quick brown fox jumps over the lazy dog.';
+  
+  const data = {
+    prompt: prompt,
+    model: 'text-davinci-002',
+    max_tokens: 100,
+    temperature: 0.1,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+  };
+  
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${API_KEY}`,
+    },
+    body: JSON.stringify(data),
+  };
+  
+  fetch(API_ENDPOINT, options)
+    .then(response => response.json())
+    .then(response => {
+      console.log(response);
+    });
+  
+});
+*/
+
 app.post('/api/world', (req, res) => {
   console.log(req.body);
   res.send(

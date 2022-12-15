@@ -28,8 +28,51 @@ const App = () => {
     if (result.data?.person?.includes("yes")) {
       setImagePosition({ x: personPosition.x, y: personPosition.y })
     }
+    console.log("before askGpt call")
+    const generated_reply = askGpt();
+    console.log("genereated reply: ", generated_reply)
     setLoading(false)
     setImages([...images, result.data.url])
+  }
+
+  async function askGpt() {
+    console.log("inside askGpt")
+
+    const API_KEY = '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';
+    const API_ENDPOINT = 'https://api.openai.com/v1/completions';
+    
+    const prompt = 'Is a cat an animal? Respond with yes and no.';
+    
+    const data = {
+      prompt: prompt,
+      model: 'text-davinci-002',
+      max_tokens: 100,
+      temperature: 0.1,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+    };
+    
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify(data),
+    };
+    
+    // Use the await keyword to wait for the fetch to complete.
+    const response = await fetch(API_ENDPOINT, options);
+    // Parse the response as JSON.
+    const jsonResponse = await response.json();
+    // Get the first choice from the response.
+    const choice = jsonResponse.choices[0];
+    // Get the completed text from the choice.
+    const completedText = choice.text;
+
+    // Return the completed text.
+    return completedText;
   }
 
   const personPosition = {
