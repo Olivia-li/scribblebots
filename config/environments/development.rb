@@ -1,3 +1,5 @@
+require 'rails/all'
+require 'action_cable'
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
@@ -7,6 +9,9 @@ Rails.application.configure do
   # it changes. This slows down response time but is perfect for development
   # since you don't have to restart the web server when you make code changes.
   config.cache_classes = false
+  # config.action_cable.allowed_request_origins = ['*', "scribblebots.ngrok.io"]
+
+  config.action_cable.disable_request_forgery_protection = true
 
   # Do not eager load code on boot.
   config.eager_load = false

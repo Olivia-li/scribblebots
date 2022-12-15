@@ -10,6 +10,7 @@
     "dev": "bin/vite dev"
   },
   "dependencies": {
+    "@rails/actioncable": "^7.0.4",
     "animate.css": "^4.1.1",
     "axios": "^1.2.1",
     "openai": "^3.1.0",

@@ -10,6 +10,8 @@ gem 'vite_rails'
 gem 'replicate-api', "~> 0.2.2"
 gem 'dotenv-rails'
 gem 'openai'
+gem 'actioncable'
+gem 'redis'
 
 
 group :development, :test do
