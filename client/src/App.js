@@ -25,7 +25,7 @@ const App = () => {
     const prompt = e.target.prompt.value
     setLoading(true)
     const result = await axios.post("predict", { prompt: prompt })
-    if (result.data.person.includes("yes")) {
+    if (result.data?.person?.includes("yes")) {
       setImagePosition({ x: personPosition.x, y: personPosition.y })
     }
     setLoading(false)
