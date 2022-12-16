@@ -9,6 +9,7 @@ const App = () => {
   const [images, setImages] = React.useState([])
   const [imagePosition, setImagePosition] = React.useState({ x: 0, y: 0 })
   const [loading, setLoading] = React.useState(false)
+  const [gameResults, setGameResults] = React.useState({gameEnded: false, playerWon: false})
 
   useEffect(() => {
     client.onopen = () => {
@@ -29,19 +30,84 @@ const App = () => {
       setImagePosition({ x: personPosition.x, y: personPosition.y })
     }
     console.log("before askGpt call")
-    const generated_reply = askGpt();
-    console.log("genereated reply: ", generated_reply)
+    // const generated_reply = askGpt(prompt);
+    // console.log("genereated reply: ", generated_reply)
+
+    // ========== You win or lose? =================
+    const endCase = await categorizeGeneratedObject(prompt);
+    setGameResults(getGameResult(endCase));
+    console.log("updated gameResults: ", gameResults.gameEnded)
+    // ============================================
+
     setLoading(false)
     setImages([...images, result.data.url])
   }
 
-  async function askGpt() {
+
+  // ======================= Object interaction =======================
+  // =================================================================
+  let EndCase = {
+    CatGoesDown: 1, 
+    CatFliesDown: 1,
+    CatFliesUp: 0,
+    TreeTakesFire: 0,
+    TreeCutDown: 1, 
+    Other: -1
+  }
+  async function isGPTResponseAffirmative(response){
+    // response: string
+    // return: Boolean
+    // Returns True or False based on GPT response. If GPT response is not yes or no, return random boolean
+    if (response.includes("yes")){
+      return true;
+    }
+    else if (response.includes("no")){
+      return false;
+    }
+    else{
+      return Math.random() >= 0.5;
+    }
+   
+  }
+
+  async function categorizeGeneratedObject(prompt){
+    // prompt: string
+    // return: EndCase
+    const question1 = `Can a human easily lift a ${prompt}? Only answer with yes or no.`; // if yes, don't do anythin
+    const question2 = `Is a ${prompt} sharp enough to cut down a tree?`; 
+    const question3 = `Can a ${prompt} be used to start a fire?`;
+
+    const gptResponse1 = await askGpt(question1);
+    const gptResponse1Boolean = await isGPTResponseAffirmative(gptResponse1);
+    const gptResponse2 = await askGpt(question2);
+    const gptResponse2Boolean = await isGPTResponseAffirmative(gptResponse2);
+    const gptResponse3 = await askGpt(question3);
+    const gptResponse3Boolean = await isGPTResponseAffirmative(gptResponse3);
+
+    if (gptResponse1Boolean & gptResponse2Boolean){
+      return EndCase.TreeCutDown;
+    }
+
+    return EndCase.Other;
+  }
+
+  async function getGameResult(endCase){
+    // EndCase: EndCase
+    // return: {gameEnded: Boolean, playerWon: Boolean}
+    if (endCase != EndCase.Other){
+      return {gameEnded: true, playerWon: (endCase == 1)}
+    }
+    return {gameEnded: false, playerWon: false}
+  }
+
+
+
+  async function askGpt(prompt) {
     console.log("inside askGpt")
 
     const API_KEY = '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';
     const API_ENDPOINT = 'https://api.openai.com/v1/completions';
     
-    const prompt = 'Is a cat an animal? Respond with yes and no.';
     
     const data = {
       prompt: prompt,
@@ -75,6 +141,8 @@ const App = () => {
     return completedText;
   }
 
+
+  // ==========================================================
   const personPosition = {
     y: 0,
     x: 1500,
@@ -101,6 +169,15 @@ const App = () => {
         />
       )
     })
+  }
+
+  function renderGameEnded() {
+    return (
+      <div>
+        <h1 className="text-6xl text-center">Game Ended</h1>
+        <h2 className="text-4xl text-center">{gameResults.playerWon ? "You Won!" : "You Lost!"}</h2>
+      </div>
+    )
   }
 
   return (
@@ -130,7 +207,9 @@ const App = () => {
         src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/figure.png"
         className={`absolute`}
       />
+      {gameResults.gameEnded && renderGameEnded()}
     </div>
+     
   )
 }
 
