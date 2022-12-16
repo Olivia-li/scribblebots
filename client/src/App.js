@@ -30,18 +30,23 @@ const App = () => {
       setImagePosition({ x: personPosition.x, y: personPosition.y })
     }
     console.log("before askGpt call")
-    // const generated_reply = askGpt(prompt);
+    const generated_reply = askGpt(prompt);
     // console.log("genereated reply: ", generated_reply)
 
     // ========== You win or lose? =================
     const endCase = await categorizeGeneratedObject(prompt);
+    // console.log("endCase: ", endCase)
     setGameResults(getGameResult(endCase));
-    console.log("updated gameResults: ", gameResults.gameEnded)
+    // console.log("updated gameResults: ", gameResults.gameEnded)
     // ============================================
 
     setLoading(false)
     setImages([...images, result.data.url])
   }
+
+  // useEffect(() => {
+  //   console.log("updated gameResults: ", gameResults.gameEnded)
+  // }, [gameResults])
 
 
   // ======================= Object interaction =======================
@@ -58,6 +63,7 @@ const App = () => {
     // response: string
     // return: Boolean
     // Returns True or False based on GPT response. If GPT response is not yes or no, return random boolean
+    response = response.toLowerCase();
     if (response.includes("yes")){
       return true;
     }
@@ -65,7 +71,8 @@ const App = () => {
       return false;
     }
     else{
-      return Math.random() >= 0.5;
+      return false;
+      //return Math.random() >= 0.5;
     }
    
   }
@@ -74,15 +81,21 @@ const App = () => {
     // prompt: string
     // return: EndCase
     const question1 = `Can a human easily lift a ${prompt}? Only answer with yes or no.`; // if yes, don't do anythin
-    const question2 = `Is a ${prompt} sharp enough to cut down a tree?`; 
-    const question3 = `Can a ${prompt} be used to start a fire?`;
+    const question2 = `Is a ${prompt} sharp enough to cut down a tree? Only answer with yes or no.`; 
+    const question3 = `Can a ${prompt} be used to start a fire directly? Only answer with yes or no.`;
 
     const gptResponse1 = await askGpt(question1);
+    console.log("gptResponse1: ", gptResponse1)
     const gptResponse1Boolean = await isGPTResponseAffirmative(gptResponse1);
+    console.log("gptResponse1Boolean: ", gptResponse1Boolean);
     const gptResponse2 = await askGpt(question2);
+    console.log("gptResponse2: ", gptResponse2)
     const gptResponse2Boolean = await isGPTResponseAffirmative(gptResponse2);
+    console.log("gptResponse2Boolean: ", gptResponse2Boolean);
     const gptResponse3 = await askGpt(question3);
+    console.log("gptResponse3: ", gptResponse3)
     const gptResponse3Boolean = await isGPTResponseAffirmative(gptResponse3);
+    console.log("gptResponse3Boolean: ", gptResponse3Boolean);
 
     if (gptResponse1Boolean & gptResponse2Boolean){
       return EndCase.TreeCutDown;
@@ -91,10 +104,11 @@ const App = () => {
     return EndCase.Other;
   }
 
-  async function getGameResult(endCase){
+  function getGameResult(endCase){
     // EndCase: EndCase
     // return: {gameEnded: Boolean, playerWon: Boolean}
     if (endCase != EndCase.Other){
+      console.log("endCase == 1", endCase == 1) 
       return {gameEnded: true, playerWon: (endCase == 1)}
     }
     return {gameEnded: false, playerWon: false}
