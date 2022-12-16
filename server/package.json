@@ -7,6 +7,9 @@
   "scripts": {
     "start": "nodemon ./server/index.js "
   },
+  "devServer": {
+    "allowedHosts": "all"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Olivia-li/scribblebots.git"

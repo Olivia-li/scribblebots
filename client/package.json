@@ -15,6 +15,9 @@
     "web-vitals": "^2.1.4",
     "websocket": "^1.0.34"
   },
+  "devServer": {
+    "allowedHosts": "all"
+  },
   "devDependencies": {
     "autoprefixer": "^10.4.13",
     "postcss": "^8.4.20",
