@@ -6,7 +6,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 const client = new W3CWebSocket('ws://localhost:8000');
 
 const App = () => {
-  const [images, setImages] = React.useState([])
+  const [image, setImage] = React.useState([])
   const [imagePosition, setImagePosition] = React.useState({ x: 0, y: 0 })
   const [loading, setLoading] = React.useState(false)
   const [gameResults, setGameResults] = React.useState({gameEnded: false, playerWon: false})
@@ -41,7 +41,7 @@ const App = () => {
     // ============================================
 
     setLoading(false)
-    setImages([...images, result.data.url])
+    setImage([result.data.url])
   }
 
   // useEffect(() => {
@@ -172,8 +172,8 @@ const App = () => {
     x: 300,
   }
 
-  function renderImages() {
-    return images.map((url, idx) => {
+  function renderImage() {
+    return image.map((url, idx) => {
       return (
         <img
           key={idx}
@@ -205,7 +205,7 @@ const App = () => {
         <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded" type="text" />
         {loading && <p>Loading...</p>}
       </form>
-      {images.length > 0 && renderImages()}
+      {image.length > 0 && renderImage()}
       <img
         style={{ left: `${catPosition.x}px`, bottom: `${catPosition.y}px` }}
         src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/cat.png"
