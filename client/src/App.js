@@ -114,25 +114,25 @@ const App = () => {
   async function categorizeGeneratedObject(prompt) {
     // prompt: string
     // return: EndCase
-    const question1 = `Can a human easily lift a ${prompt}? Only answer with yes or no.` // if yes, don't do anythin
-    const question2 = `Is a ${prompt} sharp enough to cut down a tree? Only answer with yes or no.`
-    const question3 = `Can a ${prompt} be used to start a fire directly? Only answer with yes or no.`
+    const question1HumanLiftsP = `Can a human easily lift a ${prompt}? Only answer with yes or no.`; // if yes, don't do anythin
+    const question2PCutsDownTree = `Is a ${prompt} sharp enough to cut down a tree? Only answer with yes or no.`; 
+    const question3PStartsFire = `Can a ${prompt} be used to start a fire directly? Only answer with yes or no.`;
 
-    const gptResponse1 = await askGpt(question1)
-    console.log("gptResponse1: ", gptResponse1)
-    const gptResponse1Boolean = await isGPTResponseAffirmative(gptResponse1)
-    console.log("gptResponse1Boolean: ", gptResponse1Boolean)
-    const gptResponse2 = await askGpt(question2)
-    console.log("gptResponse2: ", gptResponse2)
-    const gptResponse2Boolean = await isGPTResponseAffirmative(gptResponse2)
-    console.log("gptResponse2Boolean: ", gptResponse2Boolean)
-    const gptResponse3 = await askGpt(question3)
-    console.log("gptResponse3: ", gptResponse3)
-    const gptResponse3Boolean = await isGPTResponseAffirmative(gptResponse3)
-    console.log("gptResponse3Boolean: ", gptResponse3Boolean)
+    const gptResponse1CutsDownTree = await askGpt(question1HumanLiftsP);
+    console.log("gptResponse1CutsDownTree: ", gptResponse1CutsDownTree)
+    const gptResponse1CutsDownTreeBoolean = await isGPTResponseAffirmative(gptResponse1CutsDownTree);
+    console.log("gptResponse1CutsDownTreeBoolean: ", gptResponse1CutsDownTreeBoolean);
+    const gptResponse2PCutsDownTree = await askGpt(question2PCutsDownTree);
+    console.log("gptResponse2PCutsDownTree: ", gptResponse2PCutsDownTree)
+    const gptResponse2PCutsDownTreeBoolean = await isGPTResponseAffirmative(gptResponse2PCutsDownTree);
+    console.log("gptResponse2PCutsDownTreeBoolean: ", gptResponse2PCutsDownTreeBoolean);
+    const gptResponse3PStartsFire = await askGpt(question3PStartsFire);
+    console.log("gptResponse3PStartsFire : ", gptResponse3PStartsFire)
+    const gptResponse3PStartsFireBoolean = await isGPTResponseAffirmative(gptResponse3PStartsFire);
+    console.log("gptResponse3PStartsFire Boolean: ", gptResponse3PStartsFireBoolean);
 
-    if (gptResponse1Boolean & gptResponse2Boolean) {
-      return EndCase.TreeCutDown
+    if (gptResponse1CutsDownTreeBoolean & gptResponse2PCutsDownTreeBoolean){
+      return EndCase.TreeCutDown;
     }
 
     return EndCase.Other
