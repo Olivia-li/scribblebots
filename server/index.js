@@ -8,6 +8,7 @@ import http from 'http'
 
 const app = express();
 const port = process.env.PORT || 3001;
+const clients = new Set();
 
 const replicate = new Replicate({token: process.env.REPLICATE_API_KEY });
 
@@ -19,13 +20,16 @@ const wsServer = new webSocketServer({
 })
 
 wsServer.on('request', function(request) {
-  console.log((new Date()) + ' Recieved a new connection from origin ' + request.origin + '.');
-  // You can rewrite this part of the code to accept only the requests from allowed origin
+  
   const connection = request.accept(null, request.origin);
+  clients.add(connection);
+  console.log((new Date()) + ' Recieved a new connection from origin ' + request.origin + '.');
   connection.on('message', function(message) {
+    console.log(message.utf8Data)
     if (message.type === 'utf8') {
-      const dataFromClient = message;
-      console.log(JSON.stringify(dataFromClient.utf8Data));
+      for (const client of clients) {
+        client.sendUTF(message.utf8Data);
+      }
     }
   });
 
