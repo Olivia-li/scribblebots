@@ -7,9 +7,13 @@ const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
 const App = () => {
   const [image, setImage] = React.useState()
-  const [imagePosition, setImagePosition] = React.useState()
+  const [imagePosition, setImagePosition] = React.useState(null)
   const [loading, setLoading] = React.useState(false)
   const [gameResults, setGameResults] = React.useState({ gameEnded: false, playerWon: false })
+  const [personPosition, setPersonPosition] = React.useState({
+    x: 0,
+    y: 0,
+  })
   const [wristPosition, setWristPosition] = React.useState({ lx: 0, ly: 0, rx: 0, ry: 0 })
   const canvasRef = useRef(null)
   const h = window.innerHeight
@@ -29,9 +33,14 @@ const App = () => {
         rx: dataFromServer.rx * NORM_FACTOR,
         ry: dataFromServer.ry * NORM_FACTOR,
       })
-      console.log(dataFromServer)
     }
   }, [])
+
+  function handleSetImagePosition(position) {
+    if (imagePosition) {
+      setImagePosition(position)
+    }
+  }
 
   function returnImagePosition() {
     switch (imagePosition) {
@@ -76,6 +85,7 @@ const App = () => {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    setImagePosition(null)
     const prompt = e.target.prompt.value
     setLoading(true)
     const result = await axios.post("predict", { prompt: prompt })
@@ -190,39 +200,39 @@ const App = () => {
     console.log("gptRes10SavesCatsFromTrees : ", gptRes10SavesCatsFromTrees)
     const gptRes10SavesCatsFromTreesBool = await isGPTResYes(gptRes10SavesCatsFromTrees)
     console.log("gptRes10SavesCatsFromTreesBool: ", gptRes10SavesCatsFromTreesBool)
+
     if (res1HumanLiftsBool) {
-      setImagePosition("human")
+      handleSetImagePosition("human")
     }
     if (res1HumanLiftsBool && gptRes2PCutsDownTreeBool) {
       return EndCase.TreeCutDown
     }
     if (gptRes3PStartsFireBool) {
-      setImagePosition("tree")
+      handleSetImagePosition("tree")
       return EndCase.TreeTakesFire
     }
     if (gptRes4CatLikesBool) {
-      setImagePosition("tree")
+      handleSetImagePosition("tree")
       return EndCase.CatGoesDown
     }
     if (gptRes5ClimbDownBool) {
-      setImagePosition("tree")
+      handleSetImagePosition("tree")
       return EndCase.CatGoesDown
     }
     if (gptRes6UsedToFlyBool && gptRes7FlyDangerousBool) {
-      setImagePosition("cat")
+      handleSetImagePosition("cat")
       return EndCase.CatFliesUp
     }
     if (gptRes6UsedToFlyBool && !gptRes7FlyDangerousBool) {
-      setImagePosition("cat")
-      console.log("HIT")
-      return EndCase.CatFliesUp
+      handleSetImagePosition("cat")
+      return EndCase.CatFliesDown
     }
     if (gptRes8LivingCreatureBool & gptRes9CausesHarmToCatBool) {
-      setImagePosition("tree")
+      handleSetImagePosition("tree")
       return EndCase.CatGoesToHeaven
     }
     if (gptRes8LivingCreatureBool & gptRes10SavesCatsFromTreesBool) {
-      setImagePosition("tree")
+      handleSetImagePosition("tree")
       return EndCase.CatGoesDown
     }
 
@@ -278,11 +288,6 @@ const App = () => {
   }
 
   // ==========================================================
-  const personPosition = {
-    y: 0,
-    x: 1500,
-  }
-
   const catPosition = {
     y: 725,
     x: 500,

@@ -38,7 +38,6 @@ wsServer.on("request", function (request) {
   // user disconnected
   connection.on("close", function (connection) {
     console.log(new Date() + " Peer disconnected.")
-    console.log(JSON.stringify(connection))
   })
 })
 
