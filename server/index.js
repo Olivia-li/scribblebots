@@ -5,6 +5,7 @@ import bodyParser from "body-parser"
 import { server as webSocketServer } from "websocket"
 import http from "http"
 import _ from "lodash"
+import fetch from "node-fetch";
 
 const app = express()
 const port = process.env.PORT || 3001

@@ -6,9 +6,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket"
 const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
 const App = () => {
-  const [image, setImage] = React.useState(
-    "https://replicate.delivery/pbxt/HfKk4xHxwesiK0rIMDvENGZbxSxn1vyYlY9shPzyoNBTUxKQA/out-0.png"
-  )
+  const [image, setImage] = React.useState()
   const [imagePosition, setImagePosition] = React.useState()
   const [loading, setLoading] = React.useState(false)
   const [gameResults, setGameResults] = React.useState({ gameEnded: false, playerWon: false })
