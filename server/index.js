@@ -2,7 +2,6 @@ import * as dotenv from "dotenv" // see https://github.com/motdotla/dotenv#how-d
 dotenv.config()
 import express from "express"
 import bodyParser from "body-parser"
-import Replicate from "replicate-js"
 import { server as webSocketServer } from "websocket"
 import http from "http"
 import _ from "lodash"
@@ -11,7 +10,7 @@ const app = express()
 const port = process.env.PORT || 3001
 const clients = new Set()
 
-const replicate = new Replicate({ token: process.env.REPLICATE_API_KEY })
+const DIFFUSION_API = "http://141.134.130.200:38333";
 
 // Spinning the http server and the websocket server.
 const server = http.createServer()
@@ -46,16 +45,44 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 app.post("/predict", async (req, res) => {
-  const prompt = req.body.prompt
-  const model = await replicate.models.get("stability-ai/stable-diffusion")
-  const result = await model.predict({ prompt: getPrompt(prompt), width: 384, height: 384 })
-  res.json({ url: await result[0] })
-})
+  const prompt = getPrompt(req.body.prompt);
+  let resultFound = false;
+  let count = 0;
+  while(!resultFound) {
+    if(count > 16){
+      res.status(500).json({"error": "Couldn't generate image from prompt"});
+      return;
+    }
+    // TODO(Zain): investigate session hash, and fn_index values.
+    const result = await fetch(`${DIFFUSION_API}/run/predict/`, {
+      "headers": {
+        "accept": "*/*",
+        "accept-language": "en-US,en;q=0.9,ta;q=0.8",
+        "content-type": "application/json",
+        "Referer": `${DIFFUSION_API}/`,
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      },
+      "body": `{\"fn_index\":51,\"data\":[\"${prompt}\",\"\",\"None\",\"None\",20,\"Euler a\",false,false,1,1,7,-1,-1,0,0,0,false,512,512,false,0.7,0,0,\"None\",false,false,false,\"\",\"Seed\",\"\",\"Nothing\",\"\",true,false,false,null,\"\",\"\"],\"session_hash\":\"xxp6z1hvm7\"}`,
+      "method": "POST"
+    });
+    const resultJson = await result.json();
+    const name = resultJson.data && resultJson.data[0] && resultJson.data[0] && resultJson.data[0][0] && resultJson.data[0][0]["name"];
+    
+    if(name){
+      res.json({ url: await removeBackground(`${DIFFUSION_API}/file=${name}`) });
+      resultFound = true;
+    }
+    await new Promise(r => setTimeout(r, 250));
+    count++;
+  }
+});
 
 async function removeBackground(url) {
-  const model = await replicate.models.get("cjwbw/rembg")
-  const result = await model.predict({ image: url })
-  return result
+  const options = { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({image: url}) };
+  const API_ENDPOINT = 'http://127.0.0.1:4999/predict';
+  const response = await fetch(API_ENDPOINT, options).catch(err => console.log(err));
+  const data = await response.text();
+  return data
 }
 
 function getPrompt(prompt) {
