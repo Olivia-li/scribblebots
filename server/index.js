@@ -48,8 +48,8 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.post("/predict", async (req, res) => {
   const prompt = req.body.prompt
   const model = await replicate.models.get("stability-ai/stable-diffusion")
-  const result = await model.predict({ prompt: getPrompt(prompt) })
-  res.json({ url: await removeBackground(result[0]) })
+  const result = await model.predict({ prompt: getPrompt(prompt), width: 384, height: 384 })
+  res.json({ url: await result[0] })
 })
 
 async function removeBackground(url) {
