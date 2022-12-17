@@ -127,10 +127,10 @@ const App = () => {
     const question7PCausesHarmToCat = `Is it likely that a ${prompt} will cause harm to a cat if locked in a room together? Only answer with yes or no.`
     const question8PSavesCatsFromTrees = `Do ${prompt} save cats from trees often? Only answer with yes or no`
 
-    const gptResponse1CutsDownTree = await askGpt(question1HumanLiftsP)
-    console.log("gptResponse1CutsDownTree: ", gptResponse1CutsDownTree)
-    const gptResponse1CutsDownTreeBoolean = await isGPTResponseAffirmative(gptResponse1CutsDownTree);
-    console.log("gptResponse1CutsDownTreeBoolean: ", gptResponse1CutsDownTreeBoolean);
+    const gptResponse1HumanLiftsP = await askGpt(question1HumanLiftsP)
+    console.log("gptResponse1HumanLiftsP: ", gptResponse1HumanLiftsP)
+    const gptResponse1HumanLiftsPBoolean = await isGPTResponseAffirmative(gptResponse1HumanLiftsP);
+    console.log("gptResponse1HumanLiftsPBoolean: ", gptResponse1HumanLiftsPBoolean);
 
     const gptResponse2PCutsDownTree = await askGpt(question2PCutsDownTree);
     console.log("gptResponse2PCutsDownTree: ", gptResponse2PCutsDownTree)
@@ -167,7 +167,7 @@ const App = () => {
     const gptResponse8PSavesCatsFromTreesBoolean = await isGPTResponseAffirmative(gptResponse8PSavesCatsFromTrees);
     console.log("gptResponse8PSavesCatsFromTreesBoolean: ", gptResponse8PSavesCatsFromTreesBoolean);
 
-    if (gptResponse1CutsDownTreeBoolean & gptResponse2PCutsDownTreeBoolean){
+    if (gptResponse1HumanLiftsPBoolean & gptResponse2PCutsDownTreeBoolean){
       return EndCase.TreeCutDown;
     }
     if (gptResponse3PStartsFireBoolean){
