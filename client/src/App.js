@@ -9,13 +9,14 @@ const App = () => {
   const [image, setImage] = React.useState(
     "https://replicate.delivery/pbxt/HfKk4xHxwesiK0rIMDvENGZbxSxn1vyYlY9shPzyoNBTUxKQA/out-0.png"
   )
-  const [imagePosition, setImagePosition] = React.useState({ x: 0, y: 0 })
+  const [imagePosition, setImagePosition] = React.useState()
   const [loading, setLoading] = React.useState(false)
   const [gameResults, setGameResults] = React.useState({ gameEnded: false, playerWon: false })
   const [wristPosition, setWristPosition] = React.useState({ lx: 0, ly: 0, rx: 0, ry: 0 })
   const canvasRef = useRef(null)
   const h = window.innerHeight
   const w = window.innerWidth
+
   const NORM_FACTOR = 1
 
   useEffect(() => {
@@ -33,6 +34,19 @@ const App = () => {
       console.log(dataFromServer)
     }
   }, [])
+
+  function returnImagePosition() {
+    switch (imagePosition) {
+      case "tree":
+        return treePosition
+      case "cat":
+        return catPosition
+      case "human":
+        return { x: wristPosition.ly * w, y: wristPosition.lx * h }
+      default:
+        return { x: 0, y: 0 }
+    }
+  }
 
   const draw = (ctx) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -75,9 +89,9 @@ const App = () => {
     // console.log("genereated reply: ", generated_reply)
 
     // ========== You win or lose? =================
-    const endCase = await categorizeGeneratedObject(prompt);
+    const endCase = await categorizeGeneratedObject(prompt)
     console.log("endCase: ", endCase)
-    setGameResults(getGameResult(endCase));
+    setGameResults(getGameResult(endCase))
     console.log("updated gameResults: ", gameResults.gameEnded)
     // ============================================
 
@@ -96,13 +110,13 @@ const App = () => {
     CatFliesDown: 1,
     CatFliesUp: 0,
     TreeTakesFire: 0,
-    TreeCutDown: 1, 
+    TreeCutDown: 1,
     CatGoesToHeaven: 0,
-    Other: -1
+    Other: -1,
   }
-  async function isGPTResponseAffirmative(response) {
+  async function isGPTResYes(response) {
     // response: string
-    // return: Boolean
+    // return: Bool
     // Returns True or False based on GPT response. If GPT response is not yes or no, return random boolean
     response = response.toLowerCase()
     if (response.includes("yes")) {
@@ -118,75 +132,100 @@ const App = () => {
   async function categorizeGeneratedObject(prompt) {
     // prompt: string
     // return: EndCase
-    const question1HumanLiftsP = `Can a human easily lift a ${prompt}? Only answer with yes or no.`; 
-    const question2PCutsDownTree = `Is a ${prompt} sharp enough to cut down a tree? Only answer with yes or no.`; 
-    const question3PStartsFire = `Can a ${prompt} be used to start a fire directly? Only answer with yes or no.`;
-    const question4CatLikesP = `Do cats like ${prompt}? Only answer with yes or no.`
-    const question5PUsedToFly = `Can ${prompt} be used to fly? Only answer with yes or no.`
-    const question6PLivingCreature = `Is ${prompt} a living creature? Only answer with yes or no.`
-    const question7PCausesHarmToCat = `Is it likely that a ${prompt} will cause harm to a cat if locked in a room together? Only answer with yes or no.`
-    const question8PSavesCatsFromTrees = `Do ${prompt} save cats from trees often? Only answer with yes or no`
+    const q1HumanLifts = `Do humans hold ${prompt} in their hand? Only answer with yes or no.`
+    const q2PCutsDownTree = `Is a ${prompt} a sharp enough to cut wood? Only answer with yes or no.`
+    const q3PStartsFire = `Can a ${prompt} be used to start a fire directly? Only answer with yes or no.`
+    const q4CatLikes = `Do cats like ${prompt}? Only answer with yes or no.`
+    const q5ClimbDown = `Can a human use a ${prompt} to climb down a tree? Only answer with yes or no.`
+    const q6UsedToFly = `Can ${prompt} be used to go in the air? Only answer with yes or no.`
+    const q7FlyDangerous = `Is flying with a ${prompt} dangerous? Only answer with yes or no.`
+    const q8LivingCreature = `Assume ${prompt} is real. Is ${prompt} by itself a living creature? Only answer with yes or no.`
+    const q9CausesHarmToCat = `Could a ${prompt} will cause harm to a cat if locked in a room together? Only answer with yes or no.`
+    const q10SavesCatsFromTrees = `Do ${prompt} save cats from trees often? Only answer with yes or no`
 
-    const gptResponse1HumanLiftsP = await askGpt(question1HumanLiftsP)
-    console.log("gptResponse1HumanLiftsP: ", gptResponse1HumanLiftsP)
-    const gptResponse1HumanLiftsPBoolean = await isGPTResponseAffirmative(gptResponse1HumanLiftsP);
-    console.log("gptResponse1HumanLiftsPBoolean: ", gptResponse1HumanLiftsPBoolean);
+    const res1HumanLifts = await askGpt(q1HumanLifts)
+    console.log("res1HumanLifts: ", res1HumanLifts)
+    const res1HumanLiftsBool = await isGPTResYes(res1HumanLifts)
+    console.log("res1HumanLiftsBool: ", res1HumanLiftsBool)
 
-    const gptResponse2PCutsDownTree = await askGpt(question2PCutsDownTree);
-    console.log("gptResponse2PCutsDownTree: ", gptResponse2PCutsDownTree)
-    const gptResponse2PCutsDownTreeBoolean = await isGPTResponseAffirmative(gptResponse2PCutsDownTree);
-    console.log("gptResponse2PCutsDownTreeBoolean: ", gptResponse2PCutsDownTreeBoolean);
+    const gptRes2PCutsDownTree = await askGpt(q2PCutsDownTree)
+    console.log("gptRes2PCutsDownTree: ", gptRes2PCutsDownTree)
+    const gptRes2PCutsDownTreeBool = await isGPTResYes(gptRes2PCutsDownTree)
+    console.log("gptRes2PCutsDownTreeBool: ", gptRes2PCutsDownTreeBool)
 
-    const gptResponse3PStartsFire = await askGpt(question3PStartsFire);
-    console.log("gptResponse3PStartsFire : ", gptResponse3PStartsFire)
-    const gptResponse3PStartsFireBoolean = await isGPTResponseAffirmative(gptResponse3PStartsFire)
-    console.log("gptResponse3PStartsFire Boolean: ", gptResponse3PStartsFireBoolean)
+    const gptRes3PStartsFire = await askGpt(q3PStartsFire)
+    console.log("gptRes3PStartsFire : ", gptRes3PStartsFire)
+    const gptRes3PStartsFireBool = await isGPTResYes(gptRes3PStartsFire)
+    console.log("gptRes3PStartsFire Bool: ", gptRes3PStartsFireBool)
 
-    const gptResponse4CatLikesP = await askGpt(question4CatLikesP);
-    console.log("gptResponse4CatLikesP : ", gptResponse4CatLikesP)
-    const gptResponse4CatLikesPBoolean = await isGPTResponseAffirmative(gptResponse4CatLikesP);
-    console.log("gptResponse4CatLikesP Boolean: ", gptResponse4CatLikesPBoolean);
+    const gptRes4CatLikes = await askGpt(q4CatLikes)
+    console.log("gptRes4CatLikes : ", gptRes4CatLikes)
+    const gptRes4CatLikesBool = await isGPTResYes(gptRes4CatLikes)
+    console.log("gptRes4CatLikes Bool: ", gptRes4CatLikesBool)
 
-    const gptResponse5PUsedToFly = await askGpt(question5PUsedToFly);
-    console.log("gptResponse5PUsedToFly : ", gptResponse5PUsedToFly)
-    const gptResponse5PUsedToFlyBoolean = await isGPTResponseAffirmative(gptResponse5PUsedToFly);
-    console.log("gptResponse5PUsedToFly Boolean: ", gptResponse5PUsedToFlyBoolean);
+    const gptRes5ClimbDown = await askGpt(q5ClimbDown)
+    console.log("gptRes5ClimbDown : ", gptRes5ClimbDown)
+    const gptRes5ClimbDownBool = await isGPTResYes(gptRes5ClimbDown)
+    console.log("gptRes4CatLikes Bool: ", gptRes5ClimbDownBool)
 
-    const gptResponse6PLivingCreature = await askGpt(question6PLivingCreature);
-    console.log("gptResponse6PLivingCreature : ", gptResponse6PLivingCreature)
-    const gptResponse6PLivingCreatureBoolean = await isGPTResponseAffirmative(gptResponse6PLivingCreature);
-    console.log("gptResponse6PLivingCreature Boolean: ", gptResponse6PLivingCreatureBoolean);
+    const gptRes6UsedToFly = await askGpt(q6UsedToFly)
+    console.log("gptRes6UsedToFly : ", gptRes6UsedToFly)
+    const gptRes6UsedToFlyBool = await isGPTResYes(gptRes6UsedToFly)
+    console.log("gptRes6UsedToFly Bool: ", gptRes6UsedToFlyBool)
 
-    const gptResponse7PCausesHarmToCat = await askGpt(question7PCausesHarmToCat);
-    console.log("gptResponse7PCausesHarmToCat : ", gptResponse7PCausesHarmToCat)
-    const gptResponse7PCausesHarmToCatBoolean = await isGPTResponseAffirmative(gptResponse7PCausesHarmToCat);
-    console.log("gptResponse7PCausesHarmToCat Boolean: ", gptResponse7PCausesHarmToCatBoolean);
+    const gptRes7FlyDangerous = await askGpt(q7FlyDangerous)
+    console.log("gptRes7FlyDangerous : ", gptRes7FlyDangerous)
+    const gptRes7FlyDangerousBool = await isGPTResYes(gptRes7FlyDangerous)
+    console.log("gptRes7FlyDangerous Bool: ", gptRes7FlyDangerousBool)
 
-    const gptResponse8PSavesCatsFromTrees = await askGpt(question8PSavesCatsFromTrees);
-    console.log("gptResponse8PSavesCatsFromTrees : ", gptResponse8PSavesCatsFromTrees)
-    const gptResponse8PSavesCatsFromTreesBoolean = await isGPTResponseAffirmative(gptResponse8PSavesCatsFromTrees);
-    console.log("gptResponse8PSavesCatsFromTreesBoolean: ", gptResponse8PSavesCatsFromTreesBoolean);
+    const gptRes8LivingCreature = await askGpt(q8LivingCreature)
+    console.log("gptRes8LivingCreature : ", gptRes8LivingCreature)
+    const gptRes8LivingCreatureBool = await isGPTResYes(gptRes8LivingCreature)
+    console.log("gptRes8LivingCreature Bool: ", gptRes8LivingCreatureBool)
 
-    if (gptResponse1HumanLiftsPBoolean & gptResponse2PCutsDownTreeBoolean){
-      return EndCase.TreeCutDown;
+    const gptRes9CausesHarmToCat = await askGpt(q9CausesHarmToCat)
+    console.log("gptRes9CausesHarmToCat : ", gptRes9CausesHarmToCat)
+    const gptRes9CausesHarmToCatBool = await isGPTResYes(gptRes9CausesHarmToCat)
+    console.log("gptRes9CausesHarmToCat Bool: ", gptRes9CausesHarmToCatBool)
+
+    const gptRes10SavesCatsFromTrees = await askGpt(q10SavesCatsFromTrees)
+    console.log("gptRes10SavesCatsFromTrees : ", gptRes10SavesCatsFromTrees)
+    const gptRes10SavesCatsFromTreesBool = await isGPTResYes(gptRes10SavesCatsFromTrees)
+    console.log("gptRes10SavesCatsFromTreesBool: ", gptRes10SavesCatsFromTreesBool)
+    if (res1HumanLiftsBool) {
+      setImagePosition("human")
     }
-    if (gptResponse3PStartsFireBoolean){
-      return EndCase.TreeTakesFire;
+    if (res1HumanLiftsBool && gptRes2PCutsDownTreeBool) {
+      return EndCase.TreeCutDown
     }
-    if (gptResponse4CatLikesPBoolean){
-      return EndCase.CatGoesDown;
+    if (gptRes3PStartsFireBool) {
+      setImagePosition("tree")
+      return EndCase.TreeTakesFire
     }
-
-    if (gptResponse5PUsedToFlyBoolean){
-      return EndCase.CatFliesUp; // todo: return randomly between CatFliesDown and CatFliesUp
+    if (gptRes4CatLikesBool) {
+      setImagePosition("tree")
+      return EndCase.CatGoesDown
     }
-
-    if (gptResponse6PLivingCreatureBoolean & gptResponse7PCausesHarmToCatBoolean){
-      return EndCase.CatGoesToHeaven;
+    if (gptRes5ClimbDownBool) {
+      setImagePosition("tree")
+      return EndCase.CatGoesDown
     }
-
-    if (gptResponse6PLivingCreature & gptResponse8PSavesCatsFromTreesBoolean){
-      return EndCase.CatGoesDown;
+    if (gptRes6UsedToFlyBool && gptRes7FlyDangerousBool) {
+      setImagePosition("cat")
+      return EndCase.CatFliesUp
+    }
+    if (gptRes6UsedToFlyBool && !gptRes7FlyDangerousBool) {
+      setImagePosition("cat")
+      console.log("HIT")
+      return EndCase.CatFliesUp
+    }
+    if (gptRes8LivingCreatureBool & gptRes9CausesHarmToCatBool) {
+      setImagePosition("tree")
+      return EndCase.CatGoesToHeaven
+    }
+    if (gptRes8LivingCreatureBool & gptRes10SavesCatsFromTreesBool) {
+      setImagePosition("tree")
+      return EndCase.CatGoesDown
     }
 
     return EndCase.Other
@@ -194,7 +233,7 @@ const App = () => {
 
   function getGameResult(endCase) {
     // EndCase: EndCase
-    // return: {gameEnded: Boolean, playerWon: Boolean}
+    // return: {gameEnded: Bool, playerWon: Bool}
     if (endCase != EndCase.Other) {
       console.log("endCase == 1", endCase == 1)
       return { gameEnded: true, playerWon: endCase == 1 }
@@ -260,7 +299,7 @@ const App = () => {
     return (
       <img
         src={image}
-        style={{ left: `${imagePosition.x}px`, bottom: `${imagePosition.y}px` }}
+        style={{ left: `${returnImagePosition().x}px`, bottom: `${returnImagePosition().y}px` }}
         className="absolute fall-from-top animate__animated animate__bounce w-[300px] h-[300px]"
       />
     )
