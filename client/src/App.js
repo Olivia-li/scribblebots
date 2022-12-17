@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useRef } from "react"
 import axios from "axios"
 import "animate.css"
 import { w3cwebsocket as W3CWebSocket } from "websocket"
@@ -11,16 +11,53 @@ const App = () => {
   const [loading, setLoading] = React.useState(false)
   const [gameResults, setGameResults] = React.useState({ gameEnded: false, playerWon: false })
   const [wristPosition, setWristPosition] = React.useState({ lx: 0, ly: 0, rx: 0, ry: 0 })
-  
+  const canvasRef = useRef(null)
+
+  const NORM_FACTOR = 1
+
   useEffect(() => {
     client.onopen = () => {
       console.log("WebSocket Client Connected")
     }
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data)
-      setWristPosition({ lx: dataFromServer.lx, ly: dataFromServer.ly, rx: dataFromServer.rx, ry: dataFromServer.ry })
+      setWristPosition({
+        lx: dataFromServer.lx * NORM_FACTOR,
+        ly: dataFromServer.ly * NORM_FACTOR,
+        rx: dataFromServer.rx * NORM_FACTOR,
+        ry: dataFromServer.ry * NORM_FACTOR,
+      })
+      console.log(dataFromServer)
     }
   }, [])
+
+  const draw = (ctx) => {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.fillStyle = "orange"
+    ctx.beginPath()
+    ctx.fillRect(wristPosition.ly * ctx.canvas.width, ctx.canvas.height - wristPosition.lx * ctx.canvas.height, 5, 5)
+    ctx.fill()
+    ctx.fillRect(wristPosition.ry * ctx.canvas.width, ctx.canvas.height - wristPosition.rx * ctx.canvas.height, 5, 5)
+    ctx.fill()
+  }
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const context = canvas.getContext("2d")
+    let animationFrameId
+
+    //Our draw came here
+    const render = () => {
+      draw(context)
+      animationFrameId = window.requestAnimationFrame(render)
+    }
+
+    render()
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId)
+    }
+  }, [draw])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -194,6 +231,7 @@ const App = () => {
       }}
       className="bg-sky-100 w-screen min-h-screen bg-no-repeat bg-cover bg-center"
     >
+      <canvas ref={canvasRef} className="w-screen h-screen aboslute" style={{zIndex: 200}}/>
       <form onSubmit={handleSubmit} className="absolute m-2">
         <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded" type="text" />
         {loading && <p>Loading...</p>}
@@ -215,18 +253,6 @@ const App = () => {
         className={`absolute`}
       />
       {gameResults.gameEnded && renderGameEnded()}
-      <div
-        style={{ right: `${wristPosition.lx * 1000}px`, bottom: `${wristPosition.ly * 1000}px` }}
-        className="h-12 w-12 bg-red-500 absolute z-20 rounded-full"
-      >
-        left
-      </div>
-      <div
-        style={{ right: `${wristPosition.rx * 1000}px`, bottom: `${wristPosition.ry * 1000}px` }}
-        className="h-12 w-12 bg-green-500 absolute z-20 rounded-full"
-      >
-        right
-      </div>
     </div>
   )
 }

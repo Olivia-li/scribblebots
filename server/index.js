@@ -24,12 +24,10 @@ wsServer.on("request", function (request) {
   const connection = request.accept(null, request.origin)
   clients.add(connection)
   let count = 0
-  console.log(new Date() + " Recieved a new connection from origin " + request.origin + ".")
   connection.on("message", function (message) {
-    const date = new Date(JSON.parse(message.utf8Data).timestamp)
     if (message.type === "utf8") {
       for (const client of clients) {
-        if (count % 100) {
+        if (count % 300) {
           client.sendUTF(message.utf8Data)
         }
         count += 1
