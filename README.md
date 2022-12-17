@@ -18,7 +18,7 @@ yarn start
 cd python-server
 python3 -m venv venv
 source venv/bin/activate
-pip3 install requirements.txt
+pip3 install -r requirements.txt
 FLASK_ENV=development FLASK_APP=app.py flask run -h localhost -p 4999
 ```
 
