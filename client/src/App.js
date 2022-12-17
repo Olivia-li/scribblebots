@@ -3,21 +3,22 @@ import axios from "axios"
 import "animate.css"
 import { w3cwebsocket as W3CWebSocket } from "websocket"
 
-const client = new W3CWebSocket("ws://scribblebots.ngrok.io")
+const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
 const App = () => {
   const [image, setImage] = React.useState([])
   const [imagePosition, setImagePosition] = React.useState({ x: 0, y: 0 })
   const [loading, setLoading] = React.useState(false)
   const [gameResults, setGameResults] = React.useState({ gameEnded: false, playerWon: false })
-
+  const [wristPosition, setWristPosition] = React.useState({ lx: 0, ly: 0, rx: 0, ry: 0 })
+  
   useEffect(() => {
     client.onopen = () => {
       console.log("WebSocket Client Connected")
     }
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data)
-      console.log(dataFromServer)
+      setWristPosition({ lx: dataFromServer.lx, ly: dataFromServer.ly, rx: dataFromServer.rx, ry: dataFromServer.ry })
     }
   }, [])
 
@@ -214,6 +215,18 @@ const App = () => {
         className={`absolute`}
       />
       {gameResults.gameEnded && renderGameEnded()}
+      <div
+        style={{ right: `${wristPosition.lx * 1000}px`, bottom: `${wristPosition.ly * 1000}px` }}
+        className="h-12 w-12 bg-red-500 absolute z-20 rounded-full"
+      >
+        left
+      </div>
+      <div
+        style={{ right: `${wristPosition.rx * 1000}px`, bottom: `${wristPosition.ry * 1000}px` }}
+        className="h-12 w-12 bg-green-500 absolute z-20 rounded-full"
+      >
+        right
+      </div>
     </div>
   )
 }
