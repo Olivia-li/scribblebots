@@ -6,13 +6,16 @@ import { w3cwebsocket as W3CWebSocket } from "websocket"
 const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
 const App = () => {
-  const [image, setImage] = React.useState([])
+  const [image, setImage] = React.useState(
+    "https://replicate.delivery/pbxt/HfKk4xHxwesiK0rIMDvENGZbxSxn1vyYlY9shPzyoNBTUxKQA/out-0.png"
+  )
   const [imagePosition, setImagePosition] = React.useState({ x: 0, y: 0 })
   const [loading, setLoading] = React.useState(false)
   const [gameResults, setGameResults] = React.useState({ gameEnded: false, playerWon: false })
   const [wristPosition, setWristPosition] = React.useState({ lx: 0, ly: 0, rx: 0, ry: 0 })
   const canvasRef = useRef(null)
-
+  const h = window.innerHeight
+  const w = window.innerWidth
   const NORM_FACTOR = 1
 
   useEffect(() => {
@@ -65,7 +68,7 @@ const App = () => {
     setLoading(true)
     const result = await axios.post("predict", { prompt: prompt })
     if (result.data?.person?.includes("yes")) {
-      setImagePosition({ x: personPosition.x, y: personPosition.y })
+      setImagePosition({ x: h * wristPosition.lx, y: w * wristPosition.ly })
     }
     console.log("before askGpt call")
     const generated_reply = askGpt(prompt)
@@ -79,7 +82,7 @@ const App = () => {
     // ============================================
 
     setLoading(false)
-    setImage([result.data.url])
+    setImage(result.data.url)
   }
 
   // useEffect(() => {
@@ -114,25 +117,25 @@ const App = () => {
   async function categorizeGeneratedObject(prompt) {
     // prompt: string
     // return: EndCase
-    const question1HumanLiftsP = `Can a human easily lift a ${prompt}? Only answer with yes or no.`; // if yes, don't do anythin
-    const question2PCutsDownTree = `Is a ${prompt} sharp enough to cut down a tree? Only answer with yes or no.`; 
-    const question3PStartsFire = `Can a ${prompt} be used to start a fire directly? Only answer with yes or no.`;
+    const question1HumanLiftsP = `Can a human easily lift a ${prompt}? Only answer with yes or no.` // if yes, don't do anythin
+    const question2PCutsDownTree = `Is a ${prompt} sharp enough to cut down a tree? Only answer with yes or no.`
+    const question3PStartsFire = `Can a ${prompt} be used to start a fire directly? Only answer with yes or no.`
 
-    const gptResponse1CutsDownTree = await askGpt(question1HumanLiftsP);
+    const gptResponse1CutsDownTree = await askGpt(question1HumanLiftsP)
     console.log("gptResponse1CutsDownTree: ", gptResponse1CutsDownTree)
-    const gptResponse1CutsDownTreeBoolean = await isGPTResponseAffirmative(gptResponse1CutsDownTree);
-    console.log("gptResponse1CutsDownTreeBoolean: ", gptResponse1CutsDownTreeBoolean);
-    const gptResponse2PCutsDownTree = await askGpt(question2PCutsDownTree);
+    const gptResponse1CutsDownTreeBoolean = await isGPTResponseAffirmative(gptResponse1CutsDownTree)
+    console.log("gptResponse1CutsDownTreeBoolean: ", gptResponse1CutsDownTreeBoolean)
+    const gptResponse2PCutsDownTree = await askGpt(question2PCutsDownTree)
     console.log("gptResponse2PCutsDownTree: ", gptResponse2PCutsDownTree)
-    const gptResponse2PCutsDownTreeBoolean = await isGPTResponseAffirmative(gptResponse2PCutsDownTree);
-    console.log("gptResponse2PCutsDownTreeBoolean: ", gptResponse2PCutsDownTreeBoolean);
-    const gptResponse3PStartsFire = await askGpt(question3PStartsFire);
+    const gptResponse2PCutsDownTreeBoolean = await isGPTResponseAffirmative(gptResponse2PCutsDownTree)
+    console.log("gptResponse2PCutsDownTreeBoolean: ", gptResponse2PCutsDownTreeBoolean)
+    const gptResponse3PStartsFire = await askGpt(question3PStartsFire)
     console.log("gptResponse3PStartsFire : ", gptResponse3PStartsFire)
-    const gptResponse3PStartsFireBoolean = await isGPTResponseAffirmative(gptResponse3PStartsFire);
-    console.log("gptResponse3PStartsFire Boolean: ", gptResponse3PStartsFireBoolean);
+    const gptResponse3PStartsFireBoolean = await isGPTResponseAffirmative(gptResponse3PStartsFire)
+    console.log("gptResponse3PStartsFire Boolean: ", gptResponse3PStartsFireBoolean)
 
-    if (gptResponse1CutsDownTreeBoolean & gptResponse2PCutsDownTreeBoolean){
-      return EndCase.TreeCutDown;
+    if (gptResponse1CutsDownTreeBoolean & gptResponse2PCutsDownTreeBoolean) {
+      return EndCase.TreeCutDown
     }
 
     return EndCase.Other
@@ -203,16 +206,13 @@ const App = () => {
   }
 
   function renderImage() {
-    return image.map((url, idx) => {
-      return (
-        <img
-          key={idx}
-          src={url}
-          style={{ left: `${imagePosition.x}px`, bottom: `${imagePosition.y}px` }}
-          className="absolute fall-from-top animate__animated animate__bounce w-[300px] h-[300px]"
-        />
-      )
-    })
+    return (
+      <img
+        src={image}
+        style={{ left: `${imagePosition.x}px`, bottom: `${imagePosition.y}px` }}
+        className="absolute fall-from-top animate__animated animate__bounce w-[300px] h-[300px]"
+      />
+    )
   }
 
   function renderGameEnded() {
@@ -231,12 +231,12 @@ const App = () => {
       }}
       className="bg-sky-100 w-screen min-h-screen bg-no-repeat bg-cover bg-center"
     >
-      <canvas ref={canvasRef} className="w-screen h-screen aboslute" style={{zIndex: 200}}/>
       <form onSubmit={handleSubmit} className="absolute m-2">
         <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded" type="text" />
         {loading && <p>Loading...</p>}
       </form>
-      {image.length > 0 && renderImage()}
+      <canvas ref={canvasRef} className="w-screen h-screen aboslute" />
+      {image && renderImage()}
       <img
         style={{ left: `${catPosition.x}px`, bottom: `${catPosition.y}px` }}
         src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/cat.png"
@@ -246,11 +246,6 @@ const App = () => {
         style={{ left: `${treePosition.x}px`, bottom: `${treePosition.y}px` }}
         src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png"
         className="absolute h-[750px]"
-      />
-      <img
-        style={{ left: `${personPosition.x}px`, bottom: `${personPosition.y}px` }}
-        src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/figure.png"
-        className={`absolute`}
       />
       {gameResults.gameEnded && renderGameEnded()}
     </div>
