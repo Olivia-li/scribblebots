@@ -37,7 +37,7 @@ const App = () => {
   }, [])
 
   function handleSetImagePosition(position) {
-    if (imagePosition) {
+    if (!imagePosition) {
       setImagePosition(position)
     }
   }
