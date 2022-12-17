@@ -10,6 +10,7 @@ const App = () => {
   const [imagePosition, setImagePosition] = React.useState(null)
   const [loading, setLoading] = React.useState(false)
   const [gameResults, setGameResults] = React.useState({ gameEnded: false, playerWon: false })
+  const [gamePlayExplanation, setGamePlayExplanation] = React.useState(null)
   const [personPosition, setPersonPosition] = React.useState({
     x: 0,
     y: 0,
@@ -86,6 +87,7 @@ const App = () => {
   async function handleSubmit(e) {
     e.preventDefault()
     setImagePosition(null)
+    setGamePlayExplanation(null)
     const prompt = e.target.prompt.value
     setLoading(true)
     const result = await axios.post("predict", { prompt: prompt })
@@ -140,21 +142,21 @@ const App = () => {
   async function categorizeGeneratedObject(prompt) {
     // prompt: string
     // return: EndCase
-    const q1HumanLifts = `Do humans hold ${prompt} in their hand? Only answer with yes or no.`
-    const q2PCutsDownTree = `Is a ${prompt} a sharp enough to cut wood? Only answer with yes or no.`
-    const q3PStartsFire = `Can a ${prompt} be used to start a fire directly? Only answer with yes or no.`
-    const q4CatLikes = `Do cats like ${prompt}? Only answer with yes or no.`
-    const q5ClimbDown = `Can a human use a ${prompt} to climb down a tree? Only answer with yes or no.`
-    const q6UsedToFly = `Can ${prompt} be used to go in the air? Only answer with yes or no.`
-    const q7FlyDangerous = `Is flying with a ${prompt} dangerous? Only answer with yes or no.`
-    const q8LivingCreature = `Assume ${prompt} is real. Is ${prompt} by itself a living creature? Only answer with yes or no.`
-    const q9CausesHarmToCat = `Could a ${prompt} will cause harm to a cat if locked in a room together? Only answer with yes or no.`
+    const q1HumanLifts = `Do humans hold ${prompt} in their hand? Answer with yes or no. Explain`
+    const q2PCutsDownTree = `Is a ${prompt} a sharp enough to cut wood? Answer with yes or no. Explain`
+    const q3PStartsFire = `Can a ${prompt} be used to start a fire directly? Answer with yes or no. Explain`
+    const q4CatLikes = `Do cats like ${prompt}? Answer with yes or no. Explain`
+    const q5ClimbDown = `Can a human use a ${prompt} to climb down a tree? Answer with yes or no. Explain`
+    const q6UsedToFly = `Can ${prompt} be used to go in the air? Answer with yes or no. Explain`
+    const q7FlyDangerous = `Is flying with a ${prompt} dangerous? Answer with yes or no. Explain`
+    const q8LivingCreature = `Assume ${prompt} is real. Is ${prompt} by itself a living creature? Answer with yes or no. Explain`
+    const q9CausesHarmToCat = `Could a ${prompt} will cause harm to a cat if locked in a room together? Answer with yes or no. Explain`
     const q10SavesCatsFromTrees = `Do ${prompt} save cats from trees often? Only answer with yes or no`
 
-    const res1HumanLifts = await askGpt(q1HumanLifts)
-    console.log("res1HumanLifts: ", res1HumanLifts)
-    const res1HumanLiftsBool = await isGPTResYes(res1HumanLifts)
-    console.log("res1HumanLiftsBool: ", res1HumanLiftsBool)
+    const gptRes1HumanLifts = await askGpt(q1HumanLifts)
+    console.log("gptRes1HumanLifts: ", gptRes1HumanLifts)
+    const gptRes1HumanLiftsBool = await isGPTResYes(gptRes1HumanLifts)
+    console.log("gptRes1HumanLiftsBool: ", gptRes1HumanLiftsBool)
 
     const gptRes2PCutsDownTree = await askGpt(q2PCutsDownTree)
     console.log("gptRes2PCutsDownTree: ", gptRes2PCutsDownTree)
@@ -201,38 +203,46 @@ const App = () => {
     const gptRes10SavesCatsFromTreesBool = await isGPTResYes(gptRes10SavesCatsFromTrees)
     console.log("gptRes10SavesCatsFromTreesBool: ", gptRes10SavesCatsFromTreesBool)
 
-    if (res1HumanLiftsBool) {
+    if (gptRes1HumanLiftsBool) {
       handleSetImagePosition("human")
     }
-    if (res1HumanLiftsBool && gptRes2PCutsDownTreeBool) {
+    if (gptRes1HumanLiftsBool && gptRes2PCutsDownTreeBool) {
+      setGamePlayExplanation(gptRes2PCutsDownTree)
       return EndCase.TreeCutDown
     }
     if (gptRes3PStartsFireBool) {
       handleSetImagePosition("tree")
+      setGamePlayExplanation(gptRes3PStartsFire)
       return EndCase.TreeTakesFire
     }
     if (gptRes4CatLikesBool) {
       handleSetImagePosition("tree")
+      setGamePlayExplanation(gptRes4CatLikesBool)
       return EndCase.CatGoesDown
     }
     if (gptRes5ClimbDownBool) {
       handleSetImagePosition("tree")
+      setGamePlayExplanation(gptRes5ClimbDownBool)
       return EndCase.CatGoesDown
     }
     if (gptRes6UsedToFlyBool && gptRes7FlyDangerousBool) {
       handleSetImagePosition("cat")
+      setGamePlayExplanation(gptRes7FlyDangerous)
       return EndCase.CatFliesUp
     }
     if (gptRes6UsedToFlyBool && !gptRes7FlyDangerousBool) {
       handleSetImagePosition("cat")
+      setGamePlayExplanation(gptRes6UsedToFly)
       return EndCase.CatFliesDown
     }
     if (gptRes8LivingCreatureBool & gptRes9CausesHarmToCatBool) {
       handleSetImagePosition("tree")
+      setGamePlayExplanation(gptRes9CausesHarmToCat)
       return EndCase.CatGoesToHeaven
     }
     if (gptRes8LivingCreatureBool & gptRes10SavesCatsFromTreesBool) {
       handleSetImagePosition("tree")
+      setGamePlayExplanation(gptRes10SavesCatsFromTrees)
       return EndCase.CatGoesDown
     }
 
@@ -308,6 +318,14 @@ const App = () => {
     )
   }
 
+  function renderGamePlayExplanation() {
+    return (
+      <div>
+        <h2 className="text-4xl text-center">{gamePlayExplanation}</h2>
+      </div>
+    )
+  }
+
   function renderGameEnded() {
     return (
       <div>
@@ -341,6 +359,7 @@ const App = () => {
         className="absolute h-[750px]"
       />
       {gameResults.gameEnded && renderGameEnded()}
+      {gamePlayExplanation && renderGamePlayExplanation()}
     </div>
   )
 }
