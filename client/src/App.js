@@ -348,9 +348,7 @@ const App = () => {
     console.log("endCase: ", endCase)
     setGameResults(getGameResult(endCase))
     console.log("updated gameResults: ", gameResults.gameEnded)
-    if (gameResults.gameEnded) {
-      playGameEndSound()
-    }
+    //playGameEndSound()
     // ============================================
 
     setLoading(false)
@@ -537,9 +535,23 @@ const App = () => {
     // EndCase: EndCase
     // return: {gameEnded: Bool, playerWon: Bool}
     if (endCase != EndCase.Other) {
+      
       console.log("endCase == 1", endCase == 1)
+
+      const audio = new Audio()
+      if (endCase == 1)
+      {
+      audio.src = `http://localhost:3000/win.mp3`
+      }
+      else 
+      {
+        audio.src = `http://localhost:3000/lose.wav`
+      }
+      audio.play()
+
       return { gameEnded: true, playerWon: endCase == 1 }
     }
+
     return { gameEnded: false, playerWon: false }
   }
 
@@ -672,13 +684,14 @@ const App = () => {
   function playGameEndSound() {
     const audio = new Audio()
     if (gameResults.playerWon) {
-      audio.src = "../../server/assets/win.mp3"
+      audio.src = `http://localhost:3000/win.mp3`
     }
     else
     {
-      audio.src = "../../server/assets/lose.wav"
+      audio.src = `http://localhost:3000/lose.wav`
     }
     audio.play()
+    console.log("playing sound")
   }
 
   return (
