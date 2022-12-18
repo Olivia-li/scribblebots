@@ -14,10 +14,11 @@ const App = () => {
   const [gamePlayExplanation, setGamePlayExplanation] = React.useState(null)
   const [personPosition, setPersonPosition] = useState()
   const canvasRef = useRef(null)
+
   const h = window.innerHeight
   const w = window.innerWidth
 
-  const NORM_FACTOR = 1
+  const NORM_FACTOR = 0.3
   const wsRefIsOpen = useRef(false)
 
   useEffect(() => {
@@ -59,7 +60,7 @@ const App = () => {
       case "cat":
         return catPosition
       case "human":
-        return { x: wristPosition.ry * w, y: wristPosition.rx * h }
+        return { x: wristPosition.ry * w - 100 , y: wristPosition.rx * h - 100 }
       default:
         return { x: 0, y: 0 }
     }
@@ -67,22 +68,16 @@ const App = () => {
 
   const draw = useCallback(
     (ctx) => {
-      const height = ctx.canvas.height
-      const width = ctx.canvas.width
+      const ctxH = canvasRef.current?.height
+      const ctxW = canvasRef.current?.width
 
       // Clear screen
-      ctx.clearRect(0, 0, width, height)
+      ctx.clearRect(0, 0, ctxW, ctxH)
+
+      // Draw Tree
 
       // Little Human figure
-      drawFigure(ctx, width, height, personPosition)
-
-      // // Rectangle
-      // ctx.fillStyle = "orange"
-      // ctx.beginPath()
-      // ctx.fillRect(wristPosition.ly * width, height - wristPosition.lx * height, 5, 5)
-      // ctx.fill()
-      // ctx.fillRect(wristPosition.ry * width, height - wristPosition.rx * height, 5, 5)
-      // ctx.fill()
+      drawFigure(ctx, ctxW, ctxH, personPosition)
     },
     [wristPosition, personPosition]
   )
@@ -91,16 +86,17 @@ const App = () => {
     body?.map((points) => {
       let pointsList = [...points]
       ctx.beginPath()
+      ctx.lineWidth = 5
       let started = false
       while (pointsList.length > 0) {
         if (pointsList[0].x === 0 || pointsList[0].y === 1) {
           return
         }
         if (!started) {
-          ctx.moveTo(pointsList[0].y * w, h - (pointsList[0].x * h))
+          ctx.moveTo(pointsList[0].y * w * NORM_FACTOR, h - pointsList[0].x * h * NORM_FACTOR)
           started = true
         } else {
-          ctx.lineTo(pointsList[0].y * w, h - (pointsList[0].x * h))
+          ctx.lineTo(pointsList[0].y * w * NORM_FACTOR, h - pointsList[0].x * h * NORM_FACTOR)
         }
         pointsList.shift()
       }
@@ -111,9 +107,10 @@ const App = () => {
   useEffect(() => {
     const canvas = canvasRef.current
     const context = canvas.getContext("2d")
+    canvas.width = window.innerWidth
+    canvas.height = window.innerWidth
     let animationFrameId
 
-    //Our draw came here
     const render = () => {
       draw(context)
       animationFrameId = window.requestAnimationFrame(render)
@@ -133,12 +130,7 @@ const App = () => {
     const prompt = e.target.prompt.value
     setLoading(true)
     const result = await axios.post("predict", { prompt: prompt })
-    if (result.data?.person?.includes("yes")) {
-      setImagePosition({ x: h * wristPosition.lx, y: w * wristPosition.ly })
-    }
     console.log("before askGpt call")
-    const generated_reply = askGpt(prompt)
-    // console.log("genereated reply: ", generated_reply)
 
     // ========== You win or lose? =================
     const endCase = await categorizeGeneratedObject(prompt)
@@ -150,10 +142,6 @@ const App = () => {
     setLoading(false)
     setImage(result.data.url)
   }
-
-  // useEffect(() => {
-  //   console.log("updated gameResults: ", gameResults.gameEnded)
-  // }, [gameResults])
 
   // ======================= Object interaction =======================
   // =================================================================
@@ -184,7 +172,7 @@ const App = () => {
   async function categorizeGeneratedObject(prompt) {
     // prompt: string
     // return: EndCase
-    const q1HumanLifts = `Do humans hold ${prompt} in their hand? Answer with yes or no. Explain`
+    const q1HumanLifts = `Can humans hold ${prompt} in their hand? Answer with yes or no. Explain`
     const q2PCutsDownTree = `Is a ${prompt} a sharp enough to cut wood? Answer with yes or no. Explain`
     const q3PStartsFire = `Can a ${prompt} be used to start a fire directly? Answer with yes or no. Explain`
     const q4CatLikes = `Do cats like ${prompt}? Answer with yes or no. Explain`
@@ -342,12 +330,12 @@ const App = () => {
   // ==========================================================
   const catPosition = {
     y: 725,
-    x: 500,
+    x: 1000,
   }
 
   const treePosition = {
     y: 0,
-    x: 300,
+    x: 800,
   }
 
   function renderImage() {
@@ -355,7 +343,7 @@ const App = () => {
       <img
         src={image}
         style={{ left: `${returnImagePosition().x}px`, bottom: `${returnImagePosition().y}px` }}
-        className="absolute fall-from-top animate__animated animate__bounce w-[300px] h-[300px]"
+        className="absolute fall-from-top w-[150px] h-[150px]"
       />
     )
   }
@@ -378,12 +366,7 @@ const App = () => {
   }
 
   return (
-    <div
-      style={{
-        backgroundImage: "url('')",
-      }}
-      className="bg-sky-100 w-screen min-h-screen bg-no-repeat bg-cover bg-center"
-    >
+    <div className="bg-sky-100 w-screen min-h-screen bg-no-repeat bg-cover bg-center overflow-hidden">
       <form onSubmit={handleSubmit} className="absolute m-2">
         <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded x-30" type="text" />
         {loading && <p>Loading...</p>}
@@ -405,5 +388,5 @@ const App = () => {
     </div>
   )
 }
- 
+
 export default App
