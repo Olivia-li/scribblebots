@@ -26,6 +26,7 @@ const App = () => {
   const tree3Ref = useRef(null)
   const [treeState, setTreeState] = useState("static")
   const catRef = useRef(null)
+  const deadCatRef = useRef(null)
   const fireRef = useRef(null)
   const [catState, setCatState] = useState("static")
   const catY = useRef(600)
@@ -94,7 +95,8 @@ const App = () => {
       fireRef.current &&
       tree1Ref.current &&
       tree2Ref.current &&
-      tree3Ref.current
+      tree3Ref.current &&
+      deadCatRef.current
     ) {
       return
     }
@@ -118,6 +120,10 @@ const App = () => {
     var cat = new Image()
     cat.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/cat.png"
     catRef.current = cat
+
+    let deadCat = new Image()
+    deadCat.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/catdead.png"
+    deadCatRef.current = deadCat
 
     let fire = new Image()
     fire.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/fire.png"
@@ -209,7 +215,19 @@ const App = () => {
       var catSpeed = 5
       var catDirection = 1
       catY.current = catY.current + catSpeed * catDirection
-      ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
+      ctx.drawImage(deadCatRef.current, 900, catY.current, imgW, imgH)
+    } else if (catState === "dead") {
+      const canvas = ctx.canvas
+      var catSpeed = 5
+      var catDirection = 1
+      if (catY.current > canvas.height - catRef.current.height) {
+        catDirection = -1
+        setAnimationEnded(true)
+      } else if (catY < 0) {
+        catDirection = 1
+      }
+      catY.current = catY.current + catSpeed * catDirection
+      ctx.drawImage(deadCatRef.current, 900, catY.current, imgW, imgH)
     }
   }
 
@@ -233,7 +251,7 @@ const App = () => {
     [wristPosition, personPosition, catState, treeState, cutDownState]
   )
 
-  const throttledDraw = _.throttle(draw, 50)
+  const throttledDraw = _.throttle(draw, 20)
 
   function drawFigure(ctx, w, h, body) {
     body?.map((points) => {
@@ -328,12 +346,12 @@ const App = () => {
     const q2PCutsDownTree = `Is a ${prompt} a sharp enough to cut wood? Answer with yes or no. Explain`
     const q3PStartsFire = `Can a ${prompt} be used to start a fire directly? Answer with yes or no. Explain`
     const q4CatLikes = `Do cats like ${prompt}? Answer with yes or no. Explain`
-    const q5ClimbDown = `Can a cat use a ${prompt} to climb down a tree? Answer with yes or no. Explain`
+    const q5ClimbDown = `Can a living thing use a ${prompt} to climb down a tree? Answer with yes or no. Explain`
     const q6UsedToFly = `Can ${prompt} be used to go in the air? Answer with yes or no. Explain`
     const q7FlyDangerous = `Is flying with a ${prompt} dangerous? Answer with yes or no. Explain`
     const q8LivingCreature = `Assume ${prompt} is real. Is ${prompt} by itself a living creature? Answer with yes or no. Explain`
     const q9CausesHarmToCat = `Could a ${prompt} will cause harm to a cat if locked in a room together? Answer with yes or no. Explain`
-    const q10SavesCatsFromTrees = `Do ${prompt} save cats from trees often? Answer with yes or no. Explain`
+    const q10SavesCatsFromTrees = `Can a ${prompt} save a cat from a tree? Answer with yes or no. Explain`
 
     const gptRes1HumanLifts = await askGpt(q1HumanLifts)
     console.log("gptRes1HumanLifts: ", gptRes1HumanLifts)
@@ -354,7 +372,7 @@ const App = () => {
     }
 
     const gptRes3PStartsFire = await askGpt(q3PStartsFire)
-    console.log("gptRes3PStartsFire : ", gptRes3PStartsFire)
+    console.log("gptRes3PStartsFire: ", gptRes3PStartsFire)
     const gptRes3PStartsFireBool = await isGPTResYes(gptRes3PStartsFire)
     console.log("gptRes3PStartsFire Bool: ", gptRes3PStartsFireBool)
 
@@ -425,6 +443,7 @@ const App = () => {
 
     if (gptRes8LivingCreatureBool & gptRes9CausesHarmToCatBool) {
       handleSetImagePosition("tree")
+      setCatState("dead")
       setGamePlayExplanation(gptRes9CausesHarmToCat)
       return EndCase.CatGoesToHeaven
     }
@@ -436,6 +455,7 @@ const App = () => {
 
     if (gptRes8LivingCreatureBool & gptRes10SavesCatsFromTreesBool) {
       handleSetImagePosition("tree")
+      setCatState("climb_down")
       setGamePlayExplanation(gptRes10SavesCatsFromTrees)
       return EndCase.CatGoesDown
     }
@@ -463,7 +483,7 @@ const App = () => {
       prompt: prompt,
       model: "text-davinci-002",
       max_tokens: 100,
-      temperature: 0.1,
+      temperature: 0.2,
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
@@ -535,12 +555,30 @@ const App = () => {
     )
   }
 
+  const [dots, setDots] = useState(1)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (dots === 5) {
+        setDots(1)
+      } else {
+        setDots(dots + 1)
+      }
+    }, 500)
+
+    return () => clearInterval(interval)
+  }, [dots])
+
   return (
     <div className="bg-sky-100 w-screen min-h-screen bg-no-repeat bg-cover bg-center overflow-hidden">
       <form onSubmit={handleSubmit} className="absolute m-2 z-30">
         <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded" type="text" />
-        {loading && <p className="">Loading...</p>}
       </form>
+      {loading && (
+        <div className="m-auto w-full absolute">
+          <p className="text-5xl mt-12 font-bold w-[8rem] m-auto">Loading{".".repeat(dots)}</p>
+        </div>
+      )}
       <div className="absolute w-full mt-12">
         {animationEnded && gameResults.gameEnded && renderGameEnded()}
         {animationEnded && gamePlayExplanation && renderGamePlayExplanation()}
