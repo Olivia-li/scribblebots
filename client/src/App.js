@@ -7,13 +7,16 @@ import _ from "lodash"
 const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
 const App = () => {
-  const [image, setImage] = useState(null)
-  const [imagePosition, setImagePosition] = useState(null)
+  const [image, setImage] = useState()
+  const [imagePosition, setImagePosition] = useState()
   const [loading, setLoading] = useState(false)
   const [gameResults, setGameResults] = useState({ gameEnded: false, playerWon: false })
   const [wristPosition, setWristPosition] = useState({ lx: 0, ly: 0, rx: 0, ry: 0 })
   const [gamePlayExplanation, setGamePlayExplanation] = React.useState(null)
   const [personPosition, setPersonPosition] = useState()
+  
+  const h = window.innerHeight
+  const w = window.innerWidth
 
   const canvasRef = useRef(null)
   const treeRef = useRef(null)
@@ -21,6 +24,7 @@ const App = () => {
   const catRef = useRef(null)
   const [catState, setCatState] = useState("static")
   const catY = useRef(600)
+  const [imageCatY, setImageCatY] = useState(h - 550)
 
   useEffect(() => {
     if (canvasRef.current.canvas && catRef.current) {
@@ -28,8 +32,6 @@ const App = () => {
     }
   }, [catRef.current, canvasRef.current])
 
-  const h = window.innerHeight
-  const w = window.innerWidth
 
   const NORM_FACTOR = 0.3
 
@@ -66,7 +68,7 @@ const App = () => {
     }
   }
 
-  function returnImagePosition() {
+  const returnImagePosition = () => {
     switch (imagePosition) {
       case "tree":
         return treePosition
@@ -114,11 +116,10 @@ const App = () => {
     const state = catState
     const imgH = catRef.current.height
     const imgW = catRef.current.width
-    
+
     if (state === "static") {
       ctx.drawImage(catRef.current, 900, 600, imgW, imgH)
-    } 
-    else if (state === "climb_down") {
+    } else if (state === "climb_down") {
       const canvas = ctx.canvas
       var catSpeed = 5
       var catDirection = 1
@@ -129,12 +130,17 @@ const App = () => {
       }
       catY.current = catY.current + catSpeed * catDirection
       ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
+    } else if (state === "fly_up") {
+      var catSpeed = 5
+      var catDirection = -1
+      setImageCatY((prev) => prev - (catSpeed - 2) * catDirection)
+      catY.current = catY.current + catSpeed * catDirection
+      ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
     }
   }
 
   const draw = useCallback(
     (ctx) => {
-
       // Clear screen
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
@@ -285,6 +291,7 @@ const App = () => {
     console.log("gptRes4CatLikes Bool: ", gptRes4CatLikesBool)
 
     if (gptRes4CatLikesBool) {
+      setCatState("climb_down")
       handleSetImagePosition("tree")
       setGamePlayExplanation(gptRes4CatLikes)
       return EndCase.CatGoesDown
@@ -313,11 +320,13 @@ const App = () => {
     console.log("gptRes7FlyDangerous Bool: ", gptRes7FlyDangerousBool)
 
     if (gptRes6UsedToFlyBool && gptRes7FlyDangerousBool) {
+      setCatState("fly_up")
       handleSetImagePosition("cat")
       setGamePlayExplanation(gptRes7FlyDangerous)
       return EndCase.CatFliesUp
     }
     if (gptRes6UsedToFlyBool && !gptRes7FlyDangerousBool) {
+      setCatState("climb_down")
       handleSetImagePosition("cat")
       setGamePlayExplanation(gptRes6UsedToFly)
       return EndCase.CatFliesDown
@@ -409,8 +418,8 @@ const App = () => {
   }
   // ==========================================================
   const catPosition = {
-    y: 725,
-    x: 1000,
+    y: imageCatY,
+    x: 800,
   }
 
   const treePosition = {
