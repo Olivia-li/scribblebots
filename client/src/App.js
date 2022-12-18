@@ -2,11 +2,12 @@ import React, { useCallback, useEffect, useRef, useState } from "react"
 import axios from "axios"
 import "animate.css"
 import { w3cwebsocket as W3CWebSocket } from "websocket"
+import _ from "lodash"
 
 const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
 const App = () => {
-  const [image, setImage] = useState("http://localhost:4999/static/b1f5d967-73cb-4489-bf79-b6aae1ae5e26.png")
+  const [image, setImage] = useState(null)
   const [imagePosition, setImagePosition] = useState(null)
   const [loading, setLoading] = useState(false)
   const [gameResults, setGameResults] = useState({ gameEnded: false, playerWon: false })
@@ -19,7 +20,7 @@ const App = () => {
   const treeStateRef = useRef("static") // set to static for still image
   const catRef = useRef(null)
   const [catState, setCatState] = useState("static")
-  const catY = useRef(0)
+  const catY = useRef(600)
 
   useEffect(() => {
     if (canvasRef.current.canvas && catRef.current) {
@@ -113,9 +114,11 @@ const App = () => {
     const state = catState
     const imgH = catRef.current.height
     const imgW = catRef.current.width
+    
     if (state === "static") {
       ctx.drawImage(catRef.current, 900, 600, imgW, imgH)
-    } else if (state === "climb_down") {
+    } 
+    else if (state === "climb_down") {
       const canvas = ctx.canvas
       var catSpeed = 5
       var catDirection = 1
@@ -145,8 +148,10 @@ const App = () => {
       // Draw cat
       drawCat(ctx)
     },
-    [wristPosition, personPosition]
+    [wristPosition, personPosition, catState]
   )
+
+  const throttledDraw = _.throttle(draw, 50)
 
   function drawFigure(ctx, w, h, body) {
     body?.map((points) => {
@@ -178,7 +183,7 @@ const App = () => {
     let animationFrameId
 
     const render = () => {
-      draw(context)
+      throttledDraw(context)
       animationFrameId = window.requestAnimationFrame(render)
     }
 
@@ -293,6 +298,7 @@ const App = () => {
     console.log("gptRes4CatLikes Bool: ", gptRes5ClimbDownBool)
 
     if (gptRes5ClimbDownBool) {
+      setCatState("climb_down")
       handleSetImagePosition("tree")
       setGamePlayExplanation(gptRes5ClimbDown)
       return EndCase.CatGoesDown
@@ -343,7 +349,6 @@ const App = () => {
     if (gptRes8LivingCreatureBool & gptRes10SavesCatsFromTreesBool) {
       handleSetImagePosition("tree")
       setGamePlayExplanation(gptRes10SavesCatsFromTrees)
-      setCatState("climb_down")
       return EndCase.CatGoesDown
     }
 
@@ -428,16 +433,14 @@ const App = () => {
   function renderGamePlayExplanation() {
     return (
       <div className="">
-        <h2 className="text-l text-left" style={{ float: "right" }}>
-          {processGPTExplanation(gamePlayExplanation)}
-        </h2>
+        <h2 className="text-center mx-[24rem] mt-8 text-3xl">{processGPTExplanation(gamePlayExplanation)}</h2>
       </div>
     )
   }
 
   function renderGameEnded() {
     return (
-      <div className="" >
+      <div className="">
         <h1 className="text-6xl text-center">Game Ended</h1>
         <h2 className="text-4xl text-center">{gameResults.playerWon ? "You Won!" : "You Lost!"}</h2>
       </div>
