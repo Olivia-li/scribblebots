@@ -70,6 +70,7 @@ const App = () => {
   }, [setPersonPosition, setWristPosition])
 
   function handleSetImagePosition(position) {
+    console.log("POSITION", position)
     if (!imagePosition) {
       setImagePosition(position)
     }
@@ -137,8 +138,14 @@ const App = () => {
     if (wristPosition.rx / NORM_FACTOR > 0.7 && cutDownState < 3 && treeState === "cut_down") {
       setCutDownState((prev) => prev + 1)
     }
+
+    console.log("wristPosition.rx / NORM_FACTOR", wristPosition.rx / NORM_FACTOR)
+    if (wristPosition.rx / NORM_FACTOR > 0.7 && fireDownState < 3 && treeState === "fire") {
+      setFireDownState((prev) => prev + 1)
+    }
   }, [wristPosition.rx])
 
+  const [fireDownState, setFireDownState] = useState(0)
   const [cutDownState, setCutDownState] = useState(0)
   function drawTree(ctx) {
     if (!treeRef.current) {
@@ -148,17 +155,21 @@ const App = () => {
     if (treeState === "static") {
       ctx.drawImage(treeRef.current, 800, ctx.canvas.height - 1300, treeRef.current.width + 300, 1300)
     } else if (treeState === "fire") {
-      ctx.drawImage(fireRef.current, 900, Math.random() * 20 + (ctx.canvas.height - 500))
-      var treeSpeed = 5
-      var treeDirection = -1
-      treeY.current = treeY.current + treeSpeed * treeDirection
-      ctx.drawImage(
-        treeRef.current,
-        Math.random() * 10 + 800,
-        ctx.canvas.height - treeY.current,
-        treeRef.current.width + 300,
-        1300
-      )
+      if (fireDownState >= 3) {
+        ctx.drawImage(fireRef.current, 900, Math.random() * 20 + (ctx.canvas.height - 500))
+        var treeSpeed = 5
+        var treeDirection = -1
+        treeY.current = treeY.current + treeSpeed * treeDirection
+        ctx.drawImage(
+          treeRef.current,
+          Math.random() * 10 + 800,
+          ctx.canvas.height - treeY.current,
+          treeRef.current.width + 300,
+          1300
+        )
+      } else {
+        ctx.drawImage(treeRef.current, 800, ctx.canvas.height - 1300, treeRef.current.width + 300, 1300)
+      }
     } else if (treeState === "cut_down") {
       switch (cutDownState) {
         case 0:
@@ -209,13 +220,17 @@ const App = () => {
       }
       ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
     } else if (catState === "fire") {
-      if (catY.current > ctx.canvas.height) {
-        setAnimationEnded(true)
+      if (fireDownState >= 3) {
+        if (catY.current > ctx.canvas.height) {
+          setAnimationEnded(true)
+        }
+        var catSpeed = 5
+        var catDirection = 1
+        catY.current = catY.current + catSpeed * catDirection
+        ctx.drawImage(deadCatRef.current, 900, catY.current, imgW, imgH)
+      } else {
+        ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
       }
-      var catSpeed = 5
-      var catDirection = 1
-      catY.current = catY.current + catSpeed * catDirection
-      ctx.drawImage(deadCatRef.current, 900, catY.current, imgW, imgH)
     } else if (catState === "dead") {
       const canvas = ctx.canvas
       var catSpeed = 5
@@ -248,7 +263,7 @@ const App = () => {
       // Draw cat
       drawCat(ctx)
     },
-    [wristPosition, personPosition, catState, treeState, cutDownState]
+    [wristPosition, personPosition, catState, treeState, cutDownState, fireDownState]
   )
 
   const throttledDraw = _.throttle(draw, 20)
@@ -377,9 +392,12 @@ const App = () => {
     console.log("gptRes3PStartsFire Bool: ", gptRes3PStartsFireBool)
 
     if (gptRes3PStartsFireBool) {
+      if (!gptRes1HumanLiftsBool) {
+        setFireDownState(3)
+        handleSetImagePosition("tree")
+      }
       setCatState("fire")
       setTreeState("fire")
-      handleSetImagePosition("tree")
       setGamePlayExplanation(gptRes3PStartsFire)
       return EndCase.TreeTakesFire
     }
