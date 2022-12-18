@@ -8,31 +8,33 @@ const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
 const App = () => {
   const [image, setImage] = useState()
-  const [imagePosition, setImagePosition] = useState()
+  const [imagePosition, setImagePosition] = useState("tree")
   const [loading, setLoading] = useState(false)
   const [gameResults, setGameResults] = useState({ gameEnded: false, playerWon: false })
   const [animationEnded, setAnimationEnded] = useState(false)
   const [wristPosition, setWristPosition] = useState({ lx: 0, ly: 0, rx: 0, ry: 0 })
   const [gamePlayExplanation, setGamePlayExplanation] = React.useState(null)
   const [personPosition, setPersonPosition] = useState()
-  
+
   const h = window.innerHeight
   const w = window.innerWidth
 
   const canvasRef = useRef(null)
   const treeRef = useRef(null)
-  const treeStateRef = useRef("static") // set to static for still image
+  const [treeState, setTreeState] = useState("static")
   const catRef = useRef(null)
+  const fireRef = useRef(null)
   const [catState, setCatState] = useState("static")
   const catY = useRef(600)
+  const treeY = useRef(1300)
   const [imageCatY, setImageCatY] = useState(h - 550)
 
   useEffect(() => {
-    if (canvasRef.current.canvas && catRef.current) {
+    if (canvasRef.current.canvas && catRef.current && treeRef.current) {
       catY.current = canvasRef.current.canvas.height - catRef.current.height - 1300
+      treeY.current = canvasRef.current.canvas.height - 1300
     }
-  }, [catRef.current, canvasRef.current])
-
+  }, [catRef.current, canvasRef.current, treeRef.current])
 
   const NORM_FACTOR = 0.3
 
@@ -96,17 +98,31 @@ const App = () => {
     var cat = new Image()
     cat.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/cat.png"
     catRef.current = cat
+
+    let fire = new Image()
+    fire.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/fire.png"
+    fireRef.current = fire
   }, [])
 
   function drawTree(ctx) {
-    if (!treeRef.current && !ctx.canvas) {
+    if (!treeRef.current) {
       return
     }
 
-    if (treeStateRef.current === "static") {
+    if (treeState === "static") {
       ctx.drawImage(treeRef.current, 800, ctx.canvas.height - 1300, treeRef.current.width + 300, 1300)
-    } else {
-      ctx.drawImage(treeRef.current, Math.random() * 10 - 5, ctx.canvas.height - treeRef.current.height)
+    } else if (treeState === "fire") {
+      ctx.drawImage(fireRef.current, 900, Math.random() * 20 + (ctx.canvas.height - 500))
+      var treeSpeed = 5
+      var treeDirection = -1
+      treeY.current = treeY.current + treeSpeed * treeDirection
+      ctx.drawImage(
+        treeRef.current,
+        Math.random() * 10 + 800,
+        ctx.canvas.height - treeY.current,
+        treeRef.current.width + 300,
+        1300
+      )
     }
   }
 
@@ -114,13 +130,12 @@ const App = () => {
     if (!catRef.current) {
       return
     }
-    const state = catState
     const imgH = catRef.current.height
     const imgW = catRef.current.width
 
-    if (state === "static") {
+    if (catState === "static") {
       ctx.drawImage(catRef.current, 900, 600, imgW, imgH)
-    } else if (state === "climb_down") {
+    } else if (catState === "climb_down") {
       const canvas = ctx.canvas
       var catSpeed = 5
       var catDirection = 1
@@ -132,10 +147,15 @@ const App = () => {
       }
       catY.current = catY.current + catSpeed * catDirection
       ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
-    } else if (state === "fly_up") {
+    } else if (catState === "fly_up") {
       var catSpeed = 5
       var catDirection = -1
       setImageCatY((prev) => prev - (catSpeed - 2) * catDirection)
+      catY.current = catY.current + catSpeed * catDirection
+      ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
+    } else if (catState === "fire") {
+      var catSpeed = 5
+      var catDirection = 1
       catY.current = catY.current + catSpeed * catDirection
       ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
     }
@@ -151,10 +171,11 @@ const App = () => {
 
       // Draw Tree
       drawTree(ctx)
+
       // Draw cat
       drawCat(ctx)
     },
-    [wristPosition, personPosition, catState]
+    [wristPosition, personPosition, catState, treeState]
   )
 
   const throttledDraw = _.throttle(draw, 50)
@@ -283,6 +304,8 @@ const App = () => {
     console.log("gptRes3PStartsFire Bool: ", gptRes3PStartsFireBool)
 
     if (gptRes3PStartsFireBool) {
+      setCatState("fire")
+      setTreeState("fire")
       handleSetImagePosition("tree")
       setGamePlayExplanation(gptRes3PStartsFire)
       return EndCase.TreeTakesFire
