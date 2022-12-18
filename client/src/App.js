@@ -146,62 +146,71 @@ const App = () => {
     const q2PCutsDownTree = `Is a ${prompt} a sharp enough to cut wood? Answer with yes or no. Explain`
     const q3PStartsFire = `Can a ${prompt} be used to start a fire directly? Answer with yes or no. Explain`
     const q4CatLikes = `Do cats like ${prompt}? Answer with yes or no. Explain`
-    const q5ClimbDown = `Can a human use a ${prompt} to climb down a tree? Answer with yes or no. Explain`
+    const q5ClimbDown = `Can a cat use a ${prompt} to climb down a tree? Answer with yes or no. Explain`
     const q6UsedToFly = `Can ${prompt} be used to go in the air? Answer with yes or no. Explain`
     const q7FlyDangerous = `Is flying with a ${prompt} dangerous? Answer with yes or no. Explain`
     const q8LivingCreature = `Assume ${prompt} is real. Is ${prompt} by itself a living creature? Answer with yes or no. Explain`
     const q9CausesHarmToCat = `Could a ${prompt} will cause harm to a cat if locked in a room together? Answer with yes or no. Explain`
     const q10SavesCatsFromTrees = `Do ${prompt} save cats from trees often? Only answer with yes or no`
 
-    const gptRes1HumanLifts = await askGpt(q1HumanLifts)
-    console.log("gptRes1HumanLifts: ", gptRes1HumanLifts)
-    const gptRes1HumanLiftsBool = await isGPTResYes(gptRes1HumanLifts)
-    console.log("gptRes1HumanLiftsBool: ", gptRes1HumanLiftsBool)
+    // const gptRes1HumanLifts = await askGpt(q1HumanLifts)
+    // console.log("gptRes1HumanLifts: ", gptRes1HumanLifts)
+    // const gptRes1HumanLiftsBool = await isGPTResYes(gptRes1HumanLifts)
+    // console.log("gptRes1HumanLiftsBool: ", gptRes1HumanLiftsBool)
 
-    const gptRes2PCutsDownTree = await askGpt(q2PCutsDownTree)
-    console.log("gptRes2PCutsDownTree: ", gptRes2PCutsDownTree)
-    const gptRes2PCutsDownTreeBool = await isGPTResYes(gptRes2PCutsDownTree)
-    console.log("gptRes2PCutsDownTreeBool: ", gptRes2PCutsDownTreeBool)
+    const gptRes1HumanLifts = "Yes, explanation"
+    const gptRes1HumanLiftsBool = true
 
-    const gptRes3PStartsFire = await askGpt(q3PStartsFire)
-    console.log("gptRes3PStartsFire : ", gptRes3PStartsFire)
-    const gptRes3PStartsFireBool = await isGPTResYes(gptRes3PStartsFire)
-    console.log("gptRes3PStartsFire Bool: ", gptRes3PStartsFireBool)
+    // const gptRes2PCutsDownTree = await askGpt(q2PCutsDownTree)
+    // console.log("gptRes2PCutsDownTree: ", gptRes2PCutsDownTree)
+    // const gptRes2PCutsDownTreeBool = await isGPTResYes(gptRes2PCutsDownTree)
+    // console.log("gptRes2PCutsDownTreeBool: ", gptRes2PCutsDownTreeBool)
+    const gptRes2PCutsDownTree = "Yes, explanation"
+    const gptRes2PCutsDownTreeBool = true
 
-    const gptRes4CatLikes = await askGpt(q4CatLikes)
-    console.log("gptRes4CatLikes : ", gptRes4CatLikes)
-    const gptRes4CatLikesBool = await isGPTResYes(gptRes4CatLikes)
-    console.log("gptRes4CatLikes Bool: ", gptRes4CatLikesBool)
+    // const gptRes3PStartsFire = await askGpt(q3PStartsFire)
+    // console.log("gptRes3PStartsFire : ", gptRes3PStartsFire)
+    // const gptRes3PStartsFireBool = await isGPTResYes(gptRes3PStartsFire)
+    // console.log("gptRes3PStartsFire Bool: ", gptRes3PStartsFireBool)
 
-    const gptRes5ClimbDown = await askGpt(q5ClimbDown)
-    console.log("gptRes5ClimbDown : ", gptRes5ClimbDown)
-    const gptRes5ClimbDownBool = await isGPTResYes(gptRes5ClimbDown)
-    console.log("gptRes4CatLikes Bool: ", gptRes5ClimbDownBool)
+    const gptRes3PStartsFire = "Yes, explanation"
+    const gptRes3PStartsFireBool = true
 
-    const gptRes6UsedToFly = await askGpt(q6UsedToFly)
-    console.log("gptRes6UsedToFly : ", gptRes6UsedToFly)
-    const gptRes6UsedToFlyBool = await isGPTResYes(gptRes6UsedToFly)
-    console.log("gptRes6UsedToFly Bool: ", gptRes6UsedToFlyBool)
+    // const gptRes4CatLikes = await askGpt(q4CatLikes)
+    // console.log("gptRes4CatLikes : ", gptRes4CatLikes)
+    // const gptRes4CatLikesBool = await isGPTResYes(gptRes4CatLikes)
+    // console.log("gptRes4CatLikes Bool: ", gptRes4CatLikesBool)
+    
 
-    const gptRes7FlyDangerous = await askGpt(q7FlyDangerous)
-    console.log("gptRes7FlyDangerous : ", gptRes7FlyDangerous)
-    const gptRes7FlyDangerousBool = await isGPTResYes(gptRes7FlyDangerous)
-    console.log("gptRes7FlyDangerous Bool: ", gptRes7FlyDangerousBool)
+    // const gptRes5ClimbDown = await askGpt(q5ClimbDown)
+    // console.log("gptRes5ClimbDown : ", gptRes5ClimbDown)
+    // const gptRes5ClimbDownBool = await isGPTResYes(gptRes5ClimbDown)
+    // console.log("gptRes4CatLikes Bool: ", gptRes5ClimbDownBool)
 
-    const gptRes8LivingCreature = await askGpt(q8LivingCreature)
-    console.log("gptRes8LivingCreature : ", gptRes8LivingCreature)
-    const gptRes8LivingCreatureBool = await isGPTResYes(gptRes8LivingCreature)
-    console.log("gptRes8LivingCreature Bool: ", gptRes8LivingCreatureBool)
+    // const gptRes6UsedToFly = await askGpt(q6UsedToFly)
+    // console.log("gptRes6UsedToFly : ", gptRes6UsedToFly)
+    // const gptRes6UsedToFlyBool = await isGPTResYes(gptRes6UsedToFly)
+    // console.log("gptRes6UsedToFly Bool: ", gptRes6UsedToFlyBool)
 
-    const gptRes9CausesHarmToCat = await askGpt(q9CausesHarmToCat)
-    console.log("gptRes9CausesHarmToCat : ", gptRes9CausesHarmToCat)
-    const gptRes9CausesHarmToCatBool = await isGPTResYes(gptRes9CausesHarmToCat)
-    console.log("gptRes9CausesHarmToCat Bool: ", gptRes9CausesHarmToCatBool)
+    // const gptRes7FlyDangerous = await askGpt(q7FlyDangerous)
+    // console.log("gptRes7FlyDangerous : ", gptRes7FlyDangerous)
+    // const gptRes7FlyDangerousBool = await isGPTResYes(gptRes7FlyDangerous)
+    // console.log("gptRes7FlyDangerous Bool: ", gptRes7FlyDangerousBool)
 
-    const gptRes10SavesCatsFromTrees = await askGpt(q10SavesCatsFromTrees)
-    console.log("gptRes10SavesCatsFromTrees : ", gptRes10SavesCatsFromTrees)
-    const gptRes10SavesCatsFromTreesBool = await isGPTResYes(gptRes10SavesCatsFromTrees)
-    console.log("gptRes10SavesCatsFromTreesBool: ", gptRes10SavesCatsFromTreesBool)
+    // const gptRes8LivingCreature = await askGpt(q8LivingCreature)
+    // console.log("gptRes8LivingCreature : ", gptRes8LivingCreature)
+    // const gptRes8LivingCreatureBool = await isGPTResYes(gptRes8LivingCreature)
+    // console.log("gptRes8LivingCreature Bool: ", gptRes8LivingCreatureBool)
+
+    // const gptRes9CausesHarmToCat = await askGpt(q9CausesHarmToCat)
+    // console.log("gptRes9CausesHarmToCat : ", gptRes9CausesHarmToCat)
+    // const gptRes9CausesHarmToCatBool = await isGPTResYes(gptRes9CausesHarmToCat)
+    // console.log("gptRes9CausesHarmToCat Bool: ", gptRes9CausesHarmToCatBool)
+
+    // const gptRes10SavesCatsFromTrees = await askGpt(q10SavesCatsFromTrees)
+    // console.log("gptRes10SavesCatsFromTrees : ", gptRes10SavesCatsFromTrees)
+    // const gptRes10SavesCatsFromTreesBool = await isGPTResYes(gptRes10SavesCatsFromTrees)
+    // console.log("gptRes10SavesCatsFromTreesBool: ", gptRes10SavesCatsFromTreesBool)
 
     if (gptRes1HumanLiftsBool) {
       handleSetImagePosition("human")
@@ -321,7 +330,7 @@ const App = () => {
   function renderGamePlayExplanation() {
     return (
       <div>
-        <h2 className="text-4xl text-center">{gamePlayExplanation}</h2>
+        <h2 className="text-4xl text-center">gamePlayExplanation</h2>
       </div>
     )
   }
@@ -358,6 +367,7 @@ const App = () => {
         src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png"
         className="absolute h-[750px]"
       />
+      {renderGameEnded()}}
       {gameResults.gameEnded && renderGameEnded()}
       {gamePlayExplanation && renderGamePlayExplanation()}
     </div>
