@@ -27,7 +27,7 @@ wsServer.on("request", function (request) {
   connection.on("message", function (message) {
     if (message.type === "utf8") {
       for (const client of clients) {
-        if (count % 300) {
+        if (count % 500) {
           client.sendUTF(message.utf8Data)
         }
         count += 1

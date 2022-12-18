@@ -1,41 +1,51 @@
-import React, { useEffect, useRef } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import axios from "axios"
 import "animate.css"
 import { w3cwebsocket as W3CWebSocket } from "websocket"
 
 const client = new W3CWebSocket("ws://192.168.131.78:8000")
+// const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
 const App = () => {
-  const [image, setImage] = React.useState()
-  const [imagePosition, setImagePosition] = React.useState(null)
-  const [loading, setLoading] = React.useState(false)
-  const [gameResults, setGameResults] = React.useState({ gameEnded: false, playerWon: false })
+  const [image, setImage] = useState()
+  const [imagePosition, setImagePosition] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [gameResults, setGameResults] = useState({ gameEnded: false, playerWon: false })
+  const [wristPosition, setWristPosition] = useState({ lx: 0, ly: 0, rx: 0, ry: 0 })
   const [gamePlayExplanation, setGamePlayExplanation] = React.useState(null)
-  const [personPosition, setPersonPosition] = React.useState({
-    x: 0,
-    y: 0,
-  })
-  const [wristPosition, setWristPosition] = React.useState({ lx: 0, ly: 0, rx: 0, ry: 0 })
+  const [personPosition, setPersonPosition] = useState()
   const canvasRef = useRef(null)
   const h = window.innerHeight
   const w = window.innerWidth
 
   const NORM_FACTOR = 1
+  const wsRefIsOpen = useRef(false)
 
   useEffect(() => {
+    if (wsRefIsOpen.current) {
+      return
+    }
+    console.log("websocket opened")
+    wsRefIsOpen.current = true
+
     client.onopen = () => {
       console.log("WebSocket Client Connected")
     }
-    client.onmessage = (message) => {
+    client.onmessage = async (message) => {
       const dataFromServer = JSON.parse(message.data)
+      const wrist = dataFromServer.wrist
+      const body = dataFromServer.body
+
       setWristPosition({
-        lx: dataFromServer.lx * NORM_FACTOR,
-        ly: dataFromServer.ly * NORM_FACTOR,
-        rx: dataFromServer.rx * NORM_FACTOR,
-        ry: dataFromServer.ry * NORM_FACTOR,
+        lx: wrist.lx * NORM_FACTOR,
+        ly: wrist.ly * NORM_FACTOR,
+        rx: wrist.rx * NORM_FACTOR,
+        ry: wrist.ry * NORM_FACTOR,
       })
+
+      setPersonPosition([...body])
     }
-  }, [])
+  }, [setPersonPosition, setWristPosition])
 
   function handleSetImagePosition(position) {
     if (!imagePosition) {
@@ -50,20 +60,53 @@ const App = () => {
       case "cat":
         return catPosition
       case "human":
-        return { x: wristPosition.ly * w, y: wristPosition.lx * h }
+        return { x: wristPosition.ry * w, y: wristPosition.rx * h }
       default:
         return { x: 0, y: 0 }
     }
   }
 
-  const draw = (ctx) => {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-    ctx.fillStyle = "orange"
-    ctx.beginPath()
-    ctx.fillRect(wristPosition.ly * ctx.canvas.width, ctx.canvas.height - wristPosition.lx * ctx.canvas.height, 5, 5)
-    ctx.fill()
-    ctx.fillRect(wristPosition.ry * ctx.canvas.width, ctx.canvas.height - wristPosition.rx * ctx.canvas.height, 5, 5)
-    ctx.fill()
+  const draw = useCallback(
+    (ctx) => {
+      const height = ctx.canvas.height
+      const width = ctx.canvas.width
+
+      // Clear screen
+      ctx.clearRect(0, 0, width, height)
+
+      // Little Human figure
+      drawFigure(ctx, width, height, personPosition)
+
+      // // Rectangle
+      // ctx.fillStyle = "orange"
+      // ctx.beginPath()
+      // ctx.fillRect(wristPosition.ly * width, height - wristPosition.lx * height, 5, 5)
+      // ctx.fill()
+      // ctx.fillRect(wristPosition.ry * width, height - wristPosition.rx * height, 5, 5)
+      // ctx.fill()
+    },
+    [wristPosition, personPosition]
+  )
+
+  function drawFigure(ctx, w, h, body) {
+    body?.map((points) => {
+      let pointsList = [...points]
+      ctx.beginPath()
+      let started = false
+      while (pointsList.length > 0) {
+        if (pointsList[0].x === 0 || pointsList[0].y === 1) {
+          return
+        }
+        if (!started) {
+          ctx.moveTo(pointsList[0].y * w, h - (pointsList[0].x * h))
+          started = true
+        } else {
+          ctx.lineTo(pointsList[0].y * w, h - (pointsList[0].x * h))
+        }
+        pointsList.shift()
+      }
+      ctx.stroke()
+    })
   }
 
   useEffect(() => {
@@ -346,7 +389,7 @@ const App = () => {
         <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded" type="text" />
         {loading && <p>Loading...</p>}
       </form>
-      <canvas ref={canvasRef} className="w-screen h-screen aboslute" />
+      <canvas ref={canvasRef} className="w-screen h-screen absolute bg-transparent" />
       {image && renderImage()}
       <img
         style={{ left: `${catPosition.x}px`, bottom: `${catPosition.y}px` }}
