@@ -643,7 +643,7 @@ const App = () => {
   function renderGamePlayExplanation() {
     return (
       <div className="">
-        <h2 className="text-center mx-[24rem] mt-8 text-5xl">{processGPTExplanation(gamePlayExplanation)}</h2>
+        <h2 className="text-center mx-[24rem] mt-8 text-7xl">{processGPTExplanation(gamePlayExplanation)}</h2>
       </div>
     )
   }
@@ -651,8 +651,7 @@ const App = () => {
   function renderGameEnded() {
     return (
       <div className="">
-        <h1 className="text-9xl text-center">Game Ended</h1>
-        <h2 className="text-7xl text-center">{gameResults.playerWon ? "You Won!" : "You Lost!"}</h2>
+        <h1 className="text-9xl text-center">{gameResults.playerWon ? "You Won!" : "You Lost!"}</h1>
       </div>
     )
   }
