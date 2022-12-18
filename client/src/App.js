@@ -134,14 +134,12 @@ const App = () => {
 
   const draw = useCallback(
     (ctx) => {
-      const ctxH = window.innerHeight
-      const ctxW = window.innerWidth
 
       // Clear screen
-      ctx.clearRect(0, 0, ctxW, ctxH)
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
       // Little Human figure
-      drawFigure(ctx, ctxW, ctxH, personPosition)
+      drawFigure(ctx, ctx.canvas.width, ctx.canvas.height, personPosition)
 
       // Draw Tree
       drawTree(ctx)
