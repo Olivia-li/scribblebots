@@ -11,6 +11,7 @@ const App = () => {
   const [imagePosition, setImagePosition] = useState()
   const [loading, setLoading] = useState(false)
   const [gameResults, setGameResults] = useState({ gameEnded: false, playerWon: false })
+  const [animationEnded, setAnimationEnded] = useState(false)
   const [wristPosition, setWristPosition] = useState({ lx: 0, ly: 0, rx: 0, ry: 0 })
   const [gamePlayExplanation, setGamePlayExplanation] = React.useState(null)
   const [personPosition, setPersonPosition] = useState()
@@ -125,6 +126,7 @@ const App = () => {
       var catDirection = 1
       if (catY.current > canvas.height - catRef.current.height) {
         catDirection = -1
+        setAnimationEnded(true)
       } else if (catY < 0) {
         catDirection = 1
       }
@@ -202,6 +204,7 @@ const App = () => {
     e.preventDefault()
     console.log("submitted")
     setGamePlayExplanation(null)
+    setAnimationEnded(false)
     const prompt = e.target.prompt.value
     setLoading(true)
     const result = await axios.post("predict", { prompt: prompt })
@@ -461,8 +464,8 @@ const App = () => {
         {loading && <p className="">Loading...</p>}
       </form>
       <div className="absolute w-full mt-12">
-        {gameResults.gameEnded && renderGameEnded()}
-        {gamePlayExplanation && renderGamePlayExplanation()}
+        {animationEnded && gameResults.gameEnded && renderGameEnded()}
+        {animationEnded && gamePlayExplanation && renderGamePlayExplanation()}
       </div>
       {image && renderImage()}
       <canvas ref={canvasRef} className="w-screen h-screen bg-transparent" />
