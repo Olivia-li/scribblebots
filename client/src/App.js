@@ -14,6 +14,17 @@ const App = () => {
   const [gamePlayExplanation, setGamePlayExplanation] = React.useState(null)
   const [personPosition, setPersonPosition] = useState()
   const canvasRef = useRef(null)
+  const treeRef = useRef(null)
+  const treeStateRef = useRef("static") // set to static for still image
+  const catRef = useRef(null)
+  const catStateRef = useRef("static")
+  const catY = useRef(0)
+
+  useEffect(() => {
+    if (canvasRef.current && catRef.current) {
+      catY.current = canvasRef.current.canvas.height - catRef.current.height - 1300
+    }
+  }, [catRef.current, canvasRef.current])
 
   const h = window.innerHeight
   const w = window.innerWidth
@@ -60,52 +71,81 @@ const App = () => {
       case "cat":
         return catPosition
       case "human":
-        return { x: wristPosition.ry * w - 100 , y: wristPosition.rx * h - 100 }
+        return { x: wristPosition.ry * w - 100, y: wristPosition.rx * h - 100 }
       default:
         return { x: 0, y: 0 }
     }
   }
-  const treeRef = useRef(null)
-  const treeStateRef = useRef("shake") // set to static for still image
 
-  useEffect(
-    () => {
-      if (treeRef.current) {
-        return
-      }
-      var tree = new Image();
-      tree.src = 'https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png';
-      treeRef.current = tree
-    },[]
-  )
+  useEffect(() => {
+    if (treeRef.current) {
+      return
+    }
+    var tree = new Image()
+    tree.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png"
+    treeRef.current = tree
+  }, [])
 
-  function drawTree(ctx){
-      const state = treeStateRef.current
-      if (!treeRef.current){
-        return
-      }
+  useEffect(() => {
+    if (catRef.current) {
+      return
+    }
+    var cat = new Image()
+    cat.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/cat.png"
+    catRef.current = cat
+  }, [])
 
-      if (state === "static") {
-        ctx.drawImage(treeRef.current, 100, ctx.canvas.height - treeRef.current.height);
-      } else {
-        ctx.drawImage(treeRef.current, Math.random() * 10 - 5, ctx.canvas.height - treeRef.current.height);
+  function drawTree(ctx) {
+    const state = treeStateRef.current
+    if (!treeRef.current) {
+      return
+    }
+
+    if (state === "static") {
+      ctx.drawImage(treeRef.current, 800, ctx.canvas.height - 1300, treeRef.current.width + 300, 1300)
+    } else {
+      ctx.drawImage(treeRef.current, Math.random() * 10 - 5, ctx.canvas.height - treeRef.current.height)
+    }
+  }
+
+  function drawCat(ctx) {
+    const state = catStateRef.current
+    const imgH = catRef.current.height
+    const imgW = catRef.current.width
+    if (!catRef.current) {
+      return
+    }
+    if (state === "static") {
+      ctx.drawImage(catRef.current, 900, 600, imgW, imgH)
+    } else if (state === "climb_down") {
+      const canvas = ctx.canvas
+      var catSpeed = 5
+      var catDirection = 1
+      if (catY.current > canvas.height - catRef.current.height) {
+        catDirection = -1
+      } else if (catY < 0) {
+        catDirection = 1
       }
+      catY.current = catY.current + catSpeed * catDirection
+      ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
+    }
   }
 
   const draw = useCallback(
     (ctx) => {
-      const ctxH = canvasRef.current?.height
-      const ctxW = canvasRef.current?.width
+      const ctxH = window.innerHeight
+      const ctxW = window.innerWidth
 
       // Clear screen
       ctx.clearRect(0, 0, ctxW, ctxH)
 
-      // Draw Tree
-
       // Little Human figure
       drawFigure(ctx, ctxW, ctxH, personPosition)
 
+      // Draw Tree
       drawTree(ctx)
+      // Draw cat
+      drawCat(ctx)
     },
     [wristPosition, personPosition]
   )
@@ -307,6 +347,7 @@ const App = () => {
     if (gptRes8LivingCreatureBool & gptRes10SavesCatsFromTreesBool) {
       handleSetImagePosition("tree")
       setGamePlayExplanation(gptRes10SavesCatsFromTrees)
+      catStateRef.current = "climb_down"
       return EndCase.CatGoesDown
     }
 
@@ -360,7 +401,7 @@ const App = () => {
     // Return the completed text.
     return completedText
   }
-   
+
   function processGPTExplanation(gptResponse) {
     // gptResponse: String
     // return: String
@@ -391,7 +432,9 @@ const App = () => {
   function renderGamePlayExplanation() {
     return (
       <div>
-        <h2 className="text-l text-left" style={{float: "right"}}>{processGPTExplanation(gamePlayExplanation)}</h2>
+        <h2 className="text-l text-left" style={{ float: "right" }}>
+          {processGPTExplanation(gamePlayExplanation)}
+        </h2>
       </div>
     )
   }
@@ -405,23 +448,22 @@ const App = () => {
     )
   }
   function renderTreeCanvas() {
-  
-    var canvas = document.createElement('canvas');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    document.body.appendChild(canvas);
-    var ctx = canvas.getContext('2d');
-    var tree = new Image();
-    tree.src = 'https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png';
-    tree.onload = function() {
-      ctx.drawImage(tree, 0, canvas.height - tree.height);
-    };
-    var shake = function() {
+    var canvas = document.createElement("canvas")
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    document.body.appendChild(canvas)
+    var ctx = canvas.getContext("2d")
+    var tree = new Image()
+    tree.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png"
+    tree.onload = function () {
+      ctx.drawImage(tree, 0, canvas.height - tree.height)
+    }
+    var shake = function () {
       //ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(tree, Math.random() * 10 - 5, canvas.height - tree.height);
+      ctx.drawImage(tree, Math.random() * 10 - 5, canvas.height - tree.height)
       //requestAnimationFrame(shake);
-    };
-    shake();
+    }
+    shake()
   }
 
   return (
@@ -430,13 +472,13 @@ const App = () => {
         <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded x-30" type="text" />
         {loading && <p>Loading...</p>}
       </form>
-      <div style={{float: "right", width: "calc(25%)", padding: "30ems"}}>
+      <div style={{ float: "right", width: "calc(25%)", padding: "30ems" }}>
         {gameResults.gameEnded && renderGameEnded()}
         {gamePlayExplanation && renderGamePlayExplanation()}
       </div>
       <canvas ref={canvasRef} className="w-screen h-screen bg-transparent" />
       {image && renderImage()}
-      <img
+      {/* <img
         style={{ left: `${catPosition.x}px`, bottom: `${catPosition.y}px` }}
         src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/cat.png"
         className="absolute w-[120px] h-[120px]"
@@ -445,7 +487,7 @@ const App = () => {
         style={{ left: `${treePosition.x}px`, bottom: `${treePosition.y}px` }}
         src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png"
         className="absolute h-[750px]"
-      />
+      /> */}
     </div>
   )
 }
