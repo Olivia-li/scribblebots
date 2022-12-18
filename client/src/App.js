@@ -4,7 +4,6 @@ import "animate.css"
 import { w3cwebsocket as W3CWebSocket } from "websocket"
 
 const client = new W3CWebSocket("ws://192.168.131.78:8000")
-// const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
 const App = () => {
   const [image, setImage] = useState()
@@ -386,10 +385,10 @@ const App = () => {
       className="bg-sky-100 w-screen min-h-screen bg-no-repeat bg-cover bg-center"
     >
       <form onSubmit={handleSubmit} className="absolute m-2">
-        <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded" type="text" />
+        <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded x-30" type="text" />
         {loading && <p>Loading...</p>}
       </form>
-      <canvas ref={canvasRef} className="w-screen h-screen absolute bg-transparent" />
+      <canvas ref={canvasRef} className="w-screen h-screen bg-transparent" />
       {image && renderImage()}
       <img
         style={{ left: `${catPosition.x}px`, bottom: `${catPosition.y}px` }}
