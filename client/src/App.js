@@ -74,7 +74,8 @@ const App = () => {
       ctx.clearRect(0, 0, width, height)
 
       // Little Human figure
-      drawStickFigure(personPosition, width, height, ctx)
+      drawFigure(ctx, width, height, personPosition)
+
       // // Rectangle
       // ctx.fillStyle = "orange"
       // ctx.beginPath()
@@ -86,22 +87,21 @@ const App = () => {
     [wristPosition, personPosition]
   )
 
-  function drawStickFigure(body, w, h, ctx) {
+  function drawFigure(ctx, w, h, body) {
     body?.map((points) => {
       let pointsList = [...points]
       ctx.beginPath()
-      ctx.strokeStyle = "red"
-      if (points[0].x == 1 || points[0].y == 1) {
-        return
-      }
-      ctx.moveTo(pointsList[0].y * w, pointsList[0].x * h)
-      pointsList.shift()
+      let started = false
       while (pointsList.length > 0) {
-        if (points[0].x == 1 || points[0].y == 1) {
+        if (pointsList[0].x === 0 || pointsList[0].y === 1) {
           return
         }
-        console.log("x", points[0].y * w, "y", points[0].x * h)
-        ctx.lineTo(points[0].y * w, points[0].x * h)
+        if (!started) {
+          ctx.moveTo(pointsList[0].y * w, h - (pointsList[0].x * h))
+          started = true
+        } else {
+          ctx.lineTo(pointsList[0].y * w, h - (pointsList[0].x * h))
+        }
         pointsList.shift()
       }
       ctx.stroke()
