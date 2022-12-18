@@ -184,7 +184,7 @@ const App = () => {
   async function categorizeGeneratedObject(prompt) {
     // prompt: string
     // return: EndCase
-    const q1HumanLifts = `Do humans hold ${prompt} in their hand? Answer with yes or no. Explain`
+    const q1HumanLifts = `Can humans hold ${prompt} in their hand? Answer with yes or no. Explain`
     const q2PCutsDownTree = `Is a ${prompt} a sharp enough to cut wood? Answer with yes or no. Explain`
     const q3PStartsFire = `Can a ${prompt} be used to start a fire directly? Answer with yes or no. Explain`
     const q4CatLikes = `Do cats like ${prompt}? Answer with yes or no. Explain`
@@ -388,6 +388,8 @@ const App = () => {
         <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded x-30" type="text" />
         {loading && <p>Loading...</p>}
       </form>
+      {gameResults.gameEnded && renderGameEnded()}
+      {gamePlayExplanation && renderGamePlayExplanation()}
       <canvas ref={canvasRef} className="w-screen h-screen bg-transparent" />
       {image && renderImage()}
       <img
@@ -400,8 +402,6 @@ const App = () => {
         src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png"
         className="absolute h-[750px]"
       />
-      {gameResults.gameEnded && renderGameEnded()}
-      {gamePlayExplanation && renderGamePlayExplanation()}
     </div>
   )
 }
