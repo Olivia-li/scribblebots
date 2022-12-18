@@ -6,22 +6,23 @@ import { w3cwebsocket as W3CWebSocket } from "websocket"
 const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
 const App = () => {
-  const [image, setImage] = useState()
+  const [image, setImage] = useState("http://localhost:4999/static/b1f5d967-73cb-4489-bf79-b6aae1ae5e26.png")
   const [imagePosition, setImagePosition] = useState(null)
   const [loading, setLoading] = useState(false)
   const [gameResults, setGameResults] = useState({ gameEnded: false, playerWon: false })
   const [wristPosition, setWristPosition] = useState({ lx: 0, ly: 0, rx: 0, ry: 0 })
   const [gamePlayExplanation, setGamePlayExplanation] = React.useState(null)
   const [personPosition, setPersonPosition] = useState()
+
   const canvasRef = useRef(null)
   const treeRef = useRef(null)
   const treeStateRef = useRef("static") // set to static for still image
   const catRef = useRef(null)
-  const catStateRef = useRef("static")
+  const [catState, setCatState] = useState("static")
   const catY = useRef(0)
 
   useEffect(() => {
-    if (canvasRef.current && catRef.current) {
+    if (canvasRef.current.canvas && catRef.current) {
       catY.current = canvasRef.current.canvas.height - catRef.current.height - 1300
     }
   }, [catRef.current, canvasRef.current])
@@ -30,8 +31,8 @@ const App = () => {
   const w = window.innerWidth
 
   const NORM_FACTOR = 0.3
-  const wsRefIsOpen = useRef(false)
 
+  const wsRefIsOpen = useRef(false)
   useEffect(() => {
     if (wsRefIsOpen.current) {
       return
@@ -71,7 +72,7 @@ const App = () => {
       case "cat":
         return catPosition
       case "human":
-        return { x: wristPosition.ry * w - 100, y: wristPosition.rx * h - 100 }
+        return { x: wristPosition.ry * w - 80, y: wristPosition.rx * h - 80 }
       default:
         return { x: 0, y: 0 }
     }
@@ -81,12 +82,10 @@ const App = () => {
     if (treeRef.current) {
       return
     }
-    var tree = new Image()
+    let tree = new Image()
     tree.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png"
     treeRef.current = tree
-  }, [])
 
-  useEffect(() => {
     if (catRef.current) {
       return
     }
@@ -96,12 +95,11 @@ const App = () => {
   }, [])
 
   function drawTree(ctx) {
-    const state = treeStateRef.current
-    if (!treeRef.current) {
+    if (!treeRef.current && !ctx.canvas) {
       return
     }
 
-    if (state === "static") {
+    if (treeStateRef.current === "static") {
       ctx.drawImage(treeRef.current, 800, ctx.canvas.height - 1300, treeRef.current.width + 300, 1300)
     } else {
       ctx.drawImage(treeRef.current, Math.random() * 10 - 5, ctx.canvas.height - treeRef.current.height)
@@ -109,12 +107,12 @@ const App = () => {
   }
 
   function drawCat(ctx) {
-    const state = catStateRef.current
-    const imgH = catRef.current.height
-    const imgW = catRef.current.width
     if (!catRef.current) {
       return
     }
+    const state = catState
+    const imgH = catRef.current.height
+    const imgW = catRef.current.width
     if (state === "static") {
       ctx.drawImage(catRef.current, 900, 600, imgW, imgH)
     } else if (state === "climb_down") {
@@ -193,13 +191,12 @@ const App = () => {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setImagePosition(null)
+    console.log("submitted")
     setGamePlayExplanation(null)
     const prompt = e.target.prompt.value
     setLoading(true)
     const result = await axios.post("predict", { prompt: prompt })
     console.log("before askGpt call")
-
     // ========== You win or lose? =================
     const endCase = await categorizeGeneratedObject(prompt)
     console.log("endCase: ", endCase)
@@ -210,7 +207,6 @@ const App = () => {
     setLoading(false)
     setImage(result.data.url)
   }
-
   // ======================= Object interaction =======================
   // =================================================================
   let EndCase = {
@@ -287,7 +283,7 @@ const App = () => {
 
     if (gptRes4CatLikesBool) {
       handleSetImagePosition("tree")
-      setGamePlayExplanation(gptRes4CatLikesBool)
+      setGamePlayExplanation(gptRes4CatLikes)
       return EndCase.CatGoesDown
     }
 
@@ -298,7 +294,7 @@ const App = () => {
 
     if (gptRes5ClimbDownBool) {
       handleSetImagePosition("tree")
-      setGamePlayExplanation(gptRes5ClimbDownBool)
+      setGamePlayExplanation(gptRes5ClimbDown)
       return EndCase.CatGoesDown
     }
 
@@ -347,7 +343,7 @@ const App = () => {
     if (gptRes8LivingCreatureBool & gptRes10SavesCatsFromTreesBool) {
       handleSetImagePosition("tree")
       setGamePlayExplanation(gptRes10SavesCatsFromTrees)
-      catStateRef.current = "climb_down"
+      setCatState("climb_down")
       return EndCase.CatGoesDown
     }
 
@@ -431,7 +427,7 @@ const App = () => {
 
   function renderGamePlayExplanation() {
     return (
-      <div>
+      <div className="">
         <h2 className="text-l text-left" style={{ float: "right" }}>
           {processGPTExplanation(gamePlayExplanation)}
         </h2>
@@ -441,43 +437,25 @@ const App = () => {
 
   function renderGameEnded() {
     return (
-      <div>
+      <div className="" >
         <h1 className="text-6xl text-center">Game Ended</h1>
         <h2 className="text-4xl text-center">{gameResults.playerWon ? "You Won!" : "You Lost!"}</h2>
       </div>
     )
   }
-  function renderTreeCanvas() {
-    var canvas = document.createElement("canvas")
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
-    document.body.appendChild(canvas)
-    var ctx = canvas.getContext("2d")
-    var tree = new Image()
-    tree.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png"
-    tree.onload = function () {
-      ctx.drawImage(tree, 0, canvas.height - tree.height)
-    }
-    var shake = function () {
-      //ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(tree, Math.random() * 10 - 5, canvas.height - tree.height)
-      //requestAnimationFrame(shake);
-    }
-    shake()
-  }
 
   return (
     <div className="bg-sky-100 w-screen min-h-screen bg-no-repeat bg-cover bg-center overflow-hidden">
-      <form onSubmit={handleSubmit} className="absolute m-2">
-        <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded x-30" type="text" />
-        {loading && <p>Loading...</p>}
+      <form onSubmit={handleSubmit} className="absolute m-2 z-30">
+        <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded" type="text" />
+        {loading && <p className="">Loading...</p>}
       </form>
-      <div style={{ float: "right", width: "calc(25%)", padding: "30ems" }}>
+      <div className="absolute w-full mt-12">
         {gameResults.gameEnded && renderGameEnded()}
         {gamePlayExplanation && renderGamePlayExplanation()}
       </div>
-      <canvas ref={canvasRef} className="w-screen h-screen bg-transparent" />
       {image && renderImage()}
+      <canvas ref={canvasRef} className="w-screen h-screen bg-transparent" />
       {/* <img
         style={{ left: `${catPosition.x}px`, bottom: `${catPosition.y}px` }}
         src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/cat.png"
