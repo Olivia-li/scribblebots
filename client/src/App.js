@@ -103,7 +103,7 @@ const App = () => {
       // Draw Tree
 
       // Little Human figure
-      drawFigure(ctx, width, height, personPosition)
+      drawFigure(ctx, ctxW, ctxH, personPosition)
 
       drawTree(ctx)
     },
