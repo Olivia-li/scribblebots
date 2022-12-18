@@ -193,7 +193,7 @@ const App = () => {
     const q7FlyDangerous = `Is flying with a ${prompt} dangerous? Answer with yes or no. Explain`
     const q8LivingCreature = `Assume ${prompt} is real. Is ${prompt} by itself a living creature? Answer with yes or no. Explain`
     const q9CausesHarmToCat = `Could a ${prompt} will cause harm to a cat if locked in a room together? Answer with yes or no. Explain`
-    const q10SavesCatsFromTrees = `Do ${prompt} save cats from trees often? Only answer with yes or no`
+    const q10SavesCatsFromTrees = `Do ${prompt} save cats from trees often? Answer with yes or no. Explain`
 
     const gptRes1HumanLifts = await askGpt(q1HumanLifts)
     console.log("gptRes1HumanLifts: ", gptRes1HumanLifts)
@@ -338,7 +338,13 @@ const App = () => {
     // Return the completed text.
     return completedText
   }
-
+   
+  function processGPTExplanation(gptResponse) {
+    // gptResponse: String
+    // return: String
+    const processedGptResponse = gptResponse.replace("Yes, ", "").replace("No, ", "")
+    return processedGptResponse
+  }
   // ==========================================================
   const catPosition = {
     y: 725,
@@ -363,7 +369,7 @@ const App = () => {
   function renderGamePlayExplanation() {
     return (
       <div>
-        <h2 className="text-4xl text-center">{gamePlayExplanation}</h2>
+        <h2 className="text-l text-left" style={{float: "right"}}>{processGPTExplanation(gamePlayExplanation)}</h2>
       </div>
     )
   }
@@ -388,8 +394,10 @@ const App = () => {
         <input required name="prompt" className="p-3 bg-white border-2 border-gray-500 rounded x-30" type="text" />
         {loading && <p>Loading...</p>}
       </form>
-      {gameResults.gameEnded && renderGameEnded()}
-      {gamePlayExplanation && renderGamePlayExplanation()}
+      <div style={{float: "right", width: "calc(25%)", padding: "30ems"}}>
+        {gameResults.gameEnded && renderGameEnded()}
+        {gamePlayExplanation && renderGamePlayExplanation()}
+      </div>
       <canvas ref={canvasRef} className="w-screen h-screen bg-transparent" />
       {image && renderImage()}
       <img
