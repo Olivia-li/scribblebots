@@ -152,6 +152,9 @@ const App = () => {
       var catDirection = -1
       setImageCatY((prev) => prev - (catSpeed - 2) * catDirection)
       catY.current = catY.current + catSpeed * catDirection
+      if (catY.current < 0) {
+        setAnimationEnded(true)
+      }
       ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
     } else if (catState === "fire") {
       var catSpeed = 5
