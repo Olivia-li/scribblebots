@@ -139,12 +139,16 @@ const App = () => {
       setCutDownState((prev) => prev + 1)
     }
 
-    console.log("wristPosition.rx / NORM_FACTOR", wristPosition.rx / NORM_FACTOR)
     if (wristPosition.rx / NORM_FACTOR > 0.7 && fireDownState < 3 && treeState === "fire") {
       setFireDownState((prev) => prev + 1)
     }
+
+    if (wristPosition.rx / NORM_FACTOR > 0.7 && attactedDownState < 3 && catState === "attraction") {
+      setAttactedDownState((prev) => prev + 1)
+    }
   }, [wristPosition.rx])
 
+  const [attactedDownState, setAttactedDownState] = useState(0)
   const [fireDownState, setFireDownState] = useState(0)
   const [cutDownState, setCutDownState] = useState(0)
   function drawTree(ctx) {
@@ -198,17 +202,19 @@ const App = () => {
 
     if (catState === "static") {
       ctx.drawImage(catRef.current, 900, 600, imgW, imgH)
-    } else if (catState === "climb_down") {
-      const canvas = ctx.canvas
-      var catSpeed = 5
-      var catDirection = 1
-      if (catY.current > canvas.height - catRef.current.height) {
-        catDirection = -1
-        setAnimationEnded(true)
-      } else if (catY < 0) {
-        catDirection = 1
+    } else if (catState === "climb_down" || catState === "attraction") {
+      if ((catState === "attraction" && attactedDownState >= 3) || catState === "climb_down") {
+        const canvas = ctx.canvas
+        var catSpeed = 5
+        var catDirection = 1
+        if (catY.current > canvas.height - catRef.current.height) {
+          catDirection = -1
+          setAnimationEnded(true)
+        } else if (catY < 0) {
+          catDirection = 1
+        }
+        catY.current = catY.current + catSpeed * catDirection
       }
-      catY.current = catY.current + catSpeed * catDirection
       ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
     } else if (catState === "fly_up") {
       var catSpeed = 5
@@ -218,7 +224,7 @@ const App = () => {
       if (catY.current < 0) {
         setAnimationEnded(true)
       }
-      ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
+      ctx.drawImage(deadCatRef.current, 900, catY.current, imgW, imgH)
     } else if (catState === "fire") {
       if (fireDownState >= 3) {
         if (catY.current > ctx.canvas.height) {
@@ -263,7 +269,7 @@ const App = () => {
       // Draw cat
       drawCat(ctx)
     },
-    [wristPosition, personPosition, catState, treeState, cutDownState, fireDownState]
+    [wristPosition, personPosition, catState, treeState, cutDownState, fireDownState, attactedDownState]
   )
 
   const throttledDraw = _.throttle(draw, 20)
@@ -408,8 +414,12 @@ const App = () => {
     console.log("gptRes4CatLikes Bool: ", gptRes4CatLikesBool)
 
     if (gptRes4CatLikesBool) {
-      setCatState("climb_down")
-      handleSetImagePosition("tree")
+      if (!gptRes1HumanLiftsBool) {
+        setCatState("climb_down")
+        handleSetImagePosition("tree")
+      } else {
+        setCatState("attraction")
+      }
       setGamePlayExplanation(gptRes4CatLikes)
       return EndCase.CatGoesDown
     }
