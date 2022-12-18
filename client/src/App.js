@@ -205,20 +205,46 @@ const App = () => {
     const gptRes2PCutsDownTreeBool = await isGPTResYes(gptRes2PCutsDownTree)
     console.log("gptRes2PCutsDownTreeBool: ", gptRes2PCutsDownTreeBool)
 
+    if (gptRes1HumanLiftsBool) {
+      handleSetImagePosition("human")
+    }
+    if (gptRes1HumanLiftsBool && gptRes2PCutsDownTreeBool) {
+      setGamePlayExplanation(gptRes2PCutsDownTree)
+      return EndCase.TreeCutDown
+    }
+
     const gptRes3PStartsFire = await askGpt(q3PStartsFire)
     console.log("gptRes3PStartsFire : ", gptRes3PStartsFire)
     const gptRes3PStartsFireBool = await isGPTResYes(gptRes3PStartsFire)
     console.log("gptRes3PStartsFire Bool: ", gptRes3PStartsFireBool)
+
+    if (gptRes3PStartsFireBool) {
+      handleSetImagePosition("tree")
+      setGamePlayExplanation(gptRes3PStartsFire)
+      return EndCase.TreeTakesFire
+    }
 
     const gptRes4CatLikes = await askGpt(q4CatLikes)
     console.log("gptRes4CatLikes : ", gptRes4CatLikes)
     const gptRes4CatLikesBool = await isGPTResYes(gptRes4CatLikes)
     console.log("gptRes4CatLikes Bool: ", gptRes4CatLikesBool)
 
+    if (gptRes4CatLikesBool) {
+      handleSetImagePosition("tree")
+      setGamePlayExplanation(gptRes4CatLikesBool)
+      return EndCase.CatGoesDown
+    }
+
     const gptRes5ClimbDown = await askGpt(q5ClimbDown)
     console.log("gptRes5ClimbDown : ", gptRes5ClimbDown)
     const gptRes5ClimbDownBool = await isGPTResYes(gptRes5ClimbDown)
     console.log("gptRes4CatLikes Bool: ", gptRes5ClimbDownBool)
+
+    if (gptRes5ClimbDownBool) {
+      handleSetImagePosition("tree")
+      setGamePlayExplanation(gptRes5ClimbDownBool)
+      return EndCase.CatGoesDown
+    }
 
     const gptRes6UsedToFly = await askGpt(q6UsedToFly)
     console.log("gptRes6UsedToFly : ", gptRes6UsedToFly)
@@ -230,43 +256,6 @@ const App = () => {
     const gptRes7FlyDangerousBool = await isGPTResYes(gptRes7FlyDangerous)
     console.log("gptRes7FlyDangerous Bool: ", gptRes7FlyDangerousBool)
 
-    const gptRes8LivingCreature = await askGpt(q8LivingCreature)
-    console.log("gptRes8LivingCreature : ", gptRes8LivingCreature)
-    const gptRes8LivingCreatureBool = await isGPTResYes(gptRes8LivingCreature)
-    console.log("gptRes8LivingCreature Bool: ", gptRes8LivingCreatureBool)
-
-    const gptRes9CausesHarmToCat = await askGpt(q9CausesHarmToCat)
-    console.log("gptRes9CausesHarmToCat : ", gptRes9CausesHarmToCat)
-    const gptRes9CausesHarmToCatBool = await isGPTResYes(gptRes9CausesHarmToCat)
-    console.log("gptRes9CausesHarmToCat Bool: ", gptRes9CausesHarmToCatBool)
-
-    const gptRes10SavesCatsFromTrees = await askGpt(q10SavesCatsFromTrees)
-    console.log("gptRes10SavesCatsFromTrees : ", gptRes10SavesCatsFromTrees)
-    const gptRes10SavesCatsFromTreesBool = await isGPTResYes(gptRes10SavesCatsFromTrees)
-    console.log("gptRes10SavesCatsFromTreesBool: ", gptRes10SavesCatsFromTreesBool)
-
-    if (gptRes1HumanLiftsBool) {
-      handleSetImagePosition("human")
-    }
-    if (gptRes1HumanLiftsBool && gptRes2PCutsDownTreeBool) {
-      setGamePlayExplanation(gptRes2PCutsDownTree)
-      return EndCase.TreeCutDown
-    }
-    if (gptRes3PStartsFireBool) {
-      handleSetImagePosition("tree")
-      setGamePlayExplanation(gptRes3PStartsFire)
-      return EndCase.TreeTakesFire
-    }
-    if (gptRes4CatLikesBool) {
-      handleSetImagePosition("tree")
-      setGamePlayExplanation(gptRes4CatLikesBool)
-      return EndCase.CatGoesDown
-    }
-    if (gptRes5ClimbDownBool) {
-      handleSetImagePosition("tree")
-      setGamePlayExplanation(gptRes5ClimbDownBool)
-      return EndCase.CatGoesDown
-    }
     if (gptRes6UsedToFlyBool && gptRes7FlyDangerousBool) {
       handleSetImagePosition("cat")
       setGamePlayExplanation(gptRes7FlyDangerous)
@@ -277,11 +266,28 @@ const App = () => {
       setGamePlayExplanation(gptRes6UsedToFly)
       return EndCase.CatFliesDown
     }
+
+    const gptRes8LivingCreature = await askGpt(q8LivingCreature)
+    console.log("gptRes8LivingCreature : ", gptRes8LivingCreature)
+    const gptRes8LivingCreatureBool = await isGPTResYes(gptRes8LivingCreature)
+    console.log("gptRes8LivingCreature Bool: ", gptRes8LivingCreatureBool)
+
+    const gptRes9CausesHarmToCat = await askGpt(q9CausesHarmToCat)
+    console.log("gptRes9CausesHarmToCat : ", gptRes9CausesHarmToCat)
+    const gptRes9CausesHarmToCatBool = await isGPTResYes(gptRes9CausesHarmToCat)
+    console.log("gptRes9CausesHarmToCat Bool: ", gptRes9CausesHarmToCatBool)
+
     if (gptRes8LivingCreatureBool & gptRes9CausesHarmToCatBool) {
       handleSetImagePosition("tree")
       setGamePlayExplanation(gptRes9CausesHarmToCat)
       return EndCase.CatGoesToHeaven
     }
+
+    const gptRes10SavesCatsFromTrees = await askGpt(q10SavesCatsFromTrees)
+    console.log("gptRes10SavesCatsFromTrees : ", gptRes10SavesCatsFromTrees)
+    const gptRes10SavesCatsFromTreesBool = await isGPTResYes(gptRes10SavesCatsFromTrees)
+    console.log("gptRes10SavesCatsFromTreesBool: ", gptRes10SavesCatsFromTreesBool)
+
     if (gptRes8LivingCreatureBool & gptRes10SavesCatsFromTreesBool) {
       handleSetImagePosition("tree")
       setGamePlayExplanation(gptRes10SavesCatsFromTrees)
@@ -342,7 +348,7 @@ const App = () => {
   function processGPTExplanation(gptResponse) {
     // gptResponse: String
     // return: String
-    const processedGptResponse = gptResponse.replace("Yes, ", "").replace("No, ", "")
+    const processedGptResponse = gptResponse.replace("Yes, ", "").replace("No, ", "").replace("your answer.", "")
     return processedGptResponse
   }
   // ==========================================================
