@@ -40,7 +40,7 @@ const App = () => {
     }
   }, [catRef.current, canvasRef.current, treeRef.current])
 
-  const NORM_FACTOR = 0.5
+  const NORM_FACTOR = 0.8
 
   const wsRefIsOpen = useRef(false)
   useEffect(() => {
@@ -135,15 +135,16 @@ const App = () => {
     if (!canvasRef.current) {
       return
     }
-    if (wristPosition.rx / NORM_FACTOR > 0.7 && cutDownState < 3 && treeState === "cut_down") {
+    console.log(imagePosition, treeState, wristPosition.ry / NORM_FACTOR)
+    if (wristPosition.ry / NORM_FACTOR > 0.5 && cutDownState < 3 && treeState === "cut_down") {
       setCutDownState((prev) => prev + 1)
     }
 
-    if (wristPosition.rx / NORM_FACTOR > 0.7 && fireDownState < 3 && treeState === "fire") {
+    if (wristPosition.ry / NORM_FACTOR > 0.5 && fireDownState < 3 && treeState === "fire") {
       setFireDownState((prev) => prev + 1)
     }
 
-    if (wristPosition.rx / NORM_FACTOR > 0.7 && attactedDownState < 3 && catState === "attraction") {
+    if (wristPosition.ry / NORM_FACTOR > 0.5 && attactedDownState < 3 && catState === "attraction") {
       setAttactedDownState((prev) => prev + 1)
     }
   }, [wristPosition.rx])
@@ -388,6 +389,7 @@ const App = () => {
       handleSetImagePosition("human")
     }
     if (gptRes1HumanLiftsBool && gptRes2PCutsDownTreeBool) {
+      setTreeState("cut_down")
       setGamePlayExplanation(gptRes2PCutsDownTree)
       return EndCase.TreeCutDown
     }
@@ -487,6 +489,8 @@ const App = () => {
       setGamePlayExplanation(gptRes10SavesCatsFromTrees)
       return EndCase.CatGoesDown
     }
+
+    // TODO:// IMPLEMENT OTHER CODEX QUESTIONS
 
     return EndCase.Other
   }
