@@ -65,6 +65,32 @@ const App = () => {
         return { x: 0, y: 0 }
     }
   }
+  const treeRef = useRef(null)
+  const treeStateRef = useRef("shake") // set to static for still image
+
+  useEffect(
+    () => {
+      if (treeRef.current) {
+        return
+      }
+      var tree = new Image();
+      tree.src = 'https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png';
+      treeRef.current = tree
+    },[]
+  )
+
+  function drawTree(ctx){
+      const state = treeStateRef.current
+      if (!treeRef.current){
+        return
+      }
+
+      if (state === "static") {
+        ctx.drawImage(treeRef.current, 100, ctx.canvas.height - treeRef.current.height);
+      } else {
+        ctx.drawImage(treeRef.current, Math.random() * 10 - 5, ctx.canvas.height - treeRef.current.height);
+      }
+  }
 
   const draw = useCallback(
     (ctx) => {
@@ -77,7 +103,9 @@ const App = () => {
       // Draw Tree
 
       // Little Human figure
-      drawFigure(ctx, ctxW, ctxH, personPosition)
+      drawFigure(ctx, width, height, personPosition)
+
+      drawTree(ctx)
     },
     [wristPosition, personPosition]
   )
@@ -375,6 +403,25 @@ const App = () => {
         <h2 className="text-4xl text-center">{gameResults.playerWon ? "You Won!" : "You Lost!"}</h2>
       </div>
     )
+  }
+  function renderTreeCanvas() {
+  
+    var canvas = document.createElement('canvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+    var ctx = canvas.getContext('2d');
+    var tree = new Image();
+    tree.src = 'https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png';
+    tree.onload = function() {
+      ctx.drawImage(tree, 0, canvas.height - tree.height);
+    };
+    var shake = function() {
+      //ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(tree, Math.random() * 10 - 5, canvas.height - tree.height);
+      //requestAnimationFrame(shake);
+    };
+    shake();
   }
 
   return (
