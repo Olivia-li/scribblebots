@@ -673,7 +673,7 @@ const App = () => {
   function playGameEndSound() {
     const audio = new Audio()
     if (gameResults.playerWon) {
-      audio.src = "../../server/assets/lose.wav"
+      audio.src = "../../server/assets/win.mp3"
     }
     else
     {
