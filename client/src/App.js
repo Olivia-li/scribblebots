@@ -137,15 +137,15 @@ const App = () => {
       return
     }
     console.log(imagePosition, treeState, wristPosition.ry / NORM_FACTOR)
-    if (wristPosition.ry / NORM_FACTOR > 0.5 && cutDownState < 3 && treeState === "cut_down") {
+    if ((wristPosition.ry / NORM_FACTOR > 0.5 && wristPosition.ry / NORM_FACTOR < 0.6) && cutDownState < 3 && treeState === "cut_down") {
       setCutDownState((prev) => prev + 1)
     }
 
-    if (wristPosition.ry / NORM_FACTOR > 0.5 && fireDownState < 3 && treeState === "fire") {
+    if ((wristPosition.ry / NORM_FACTOR > 0.5 && wristPosition.ry / NORM_FACTOR < 0.6) && fireDownState < 3 && treeState === "fire") {
       setFireDownState((prev) => prev + 1)
     }
 
-    if (wristPosition.ry / NORM_FACTOR > 0.5 && attactedDownState < 3 && catState === "attraction") {
+    if ((wristPosition.ry / NORM_FACTOR > 0.5 && wristPosition.ry / NORM_FACTOR < 0.6) && attactedDownState < 3 && catState === "attraction") {
       setAttactedDownState((prev) => prev + 1)
     }
   }, [wristPosition.rx])
@@ -667,16 +667,6 @@ const App = () => {
       </div>
       {image && renderImage()}
       <canvas ref={canvasRef} className="w-screen h-screen bg-transparent" />
-      {/* <img
-        style={{ left: `${catPosition.x}px`, bottom: `${catPosition.y}px` }}
-        src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/cat.png"
-        className="absolute w-[120px] h-[120px]"
-      />
-      <img
-        style={{ left: `${treePosition.x}px`, bottom: `${treePosition.y}px` }}
-        src="https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png"
-        className="absolute h-[750px]"
-      /> */}
     </div>
   )
 }
