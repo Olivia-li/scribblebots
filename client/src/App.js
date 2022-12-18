@@ -363,7 +363,7 @@ const App = () => {
   function renderGamePlayExplanation() {
     return (
       <div>
-        <h2 className="text-4xl text-center">gamePlayExplanation</h2>
+        <h2 className="text-4xl text-center">{gamePlayExplanation}</h2>
       </div>
     )
   }
