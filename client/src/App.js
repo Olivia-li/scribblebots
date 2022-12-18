@@ -3,6 +3,7 @@ import axios from "axios"
 import "animate.css"
 import { w3cwebsocket as W3CWebSocket } from "websocket"
 import _ from "lodash"
+import { codexPrompt } from "./codexPrompt"
 
 const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
@@ -385,9 +386,12 @@ const App = () => {
     const gptRes2PCutsDownTreeBool = await isGPTResYes(gptRes2PCutsDownTree)
     console.log("gptRes2PCutsDownTreeBool: ", gptRes2PCutsDownTreeBool)
 
+    // The image can be held by a human
     if (gptRes1HumanLiftsBool) {
       handleSetImagePosition("human")
     }
+
+    // The image can be held by a human and can cut down a tree
     if (gptRes1HumanLiftsBool && gptRes2PCutsDownTreeBool) {
       setTreeState("cut_down")
       setGamePlayExplanation(gptRes2PCutsDownTree)
@@ -399,6 +403,7 @@ const App = () => {
     const gptRes3PStartsFireBool = await isGPTResYes(gptRes3PStartsFire)
     console.log("gptRes3PStartsFire Bool: ", gptRes3PStartsFireBool)
 
+    // The image can start a fire
     if (gptRes3PStartsFireBool) {
       if (!gptRes1HumanLiftsBool) {
         setFireDownState(3)
@@ -415,6 +420,7 @@ const App = () => {
     const gptRes4CatLikesBool = await isGPTResYes(gptRes4CatLikes)
     console.log("gptRes4CatLikes Bool: ", gptRes4CatLikesBool)
 
+    // The image is liked by cats
     if (gptRes4CatLikesBool) {
       if (!gptRes1HumanLiftsBool) {
         setCatState("climb_down")
@@ -431,6 +437,7 @@ const App = () => {
     const gptRes5ClimbDownBool = await isGPTResYes(gptRes5ClimbDown)
     console.log("gptRes4CatLikes Bool: ", gptRes5ClimbDownBool)
 
+    // The image can be used to climb down the tree
     if (gptRes5ClimbDownBool) {
       setCatState("climb_down")
       handleSetImagePosition("tree")
@@ -448,12 +455,14 @@ const App = () => {
     const gptRes7FlyDangerousBool = await isGPTResYes(gptRes7FlyDangerous)
     console.log("gptRes7FlyDangerous Bool: ", gptRes7FlyDangerousBool)
 
+    // The image can be used to fly and it is dangerous
     if (gptRes6UsedToFlyBool && gptRes7FlyDangerousBool) {
       setCatState("fly_up")
       handleSetImagePosition("cat")
       setGamePlayExplanation(gptRes7FlyDangerous)
       return EndCase.CatFliesUp
     }
+    // The image can be used to fly but it is not dangerous
     if (gptRes6UsedToFlyBool && !gptRes7FlyDangerousBool) {
       setCatState("climb_down")
       handleSetImagePosition("cat")
@@ -471,6 +480,7 @@ const App = () => {
     const gptRes9CausesHarmToCatBool = await isGPTResYes(gptRes9CausesHarmToCat)
     console.log("gptRes9CausesHarmToCat Bool: ", gptRes9CausesHarmToCatBool)
 
+    // The image is a living creature and it causes harm to a cat
     if (gptRes8LivingCreatureBool & gptRes9CausesHarmToCatBool) {
       handleSetImagePosition("tree")
       setCatState("dead")
@@ -483,6 +493,7 @@ const App = () => {
     const gptRes10SavesCatsFromTreesBool = await isGPTResYes(gptRes10SavesCatsFromTrees)
     console.log("gptRes10SavesCatsFromTreesBool: ", gptRes10SavesCatsFromTreesBool)
 
+    // The image is a living creature and it can save a cat from the tree
     if (gptRes8LivingCreatureBool & gptRes10SavesCatsFromTreesBool) {
       handleSetImagePosition("tree")
       setCatState("climb_down")
@@ -491,7 +502,14 @@ const App = () => {
     }
 
     // TODO:// IMPLEMENT OTHER CODEX QUESTIONS
-
+    const gptComment = await askCodexObjectComment(prompt)
+    const res = await askCodexAnimation(gptComment)
+    console.log("codex animation code: ", res)
+    try {
+      return eval(`(() => {${res}})()`)
+    } catch (e) {
+      setLoading(false)
+    }
     return EndCase.Other
   }
 
@@ -505,7 +523,38 @@ const App = () => {
     return { gameEnded: false, playerWon: false }
   }
 
-  async function askGpt(prompt) {
+  async function askCodexObjectComment(objectName) {
+    const prompt = `
+      axe
+      // The image can be held by a human and can cut down a tree
+      dragon
+      // The image is a living creature and it can set fire to a tree
+      jetpack
+      // The image can be used to fly and it is dangerous
+      ladder
+      // The image can be used to climb down the tree
+      explosion
+      // The image can be used to fly and can cut down a tree
+      dynamite
+      // The image can be used to fly and set fire to a tree
+      ${objectName}
+    `
+    const gptComment = await askGpt(prompt, "code-davinci-002", ["\n"])
+    console.log("gpt comment", gptComment)
+    return gptComment
+  }
+
+  async function askCodexAnimation(gptComment) {
+    const prompt = `
+      ${codexPrompt}
+      ${gptComment}
+    `
+    const res = await askGpt(prompt, "code-davinci-002", ["// end animation"])
+    const substring = res.substring(res.indexOf("// start animation") + 18)
+    return substring
+  }
+
+  async function askGpt(prompt, model = "text-davinci-002", stop = null) {
     console.log("inside askGpt")
 
     const API_KEY = "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"
@@ -513,12 +562,13 @@ const App = () => {
 
     const data = {
       prompt: prompt,
-      model: "text-davinci-002",
+      model: model,
       max_tokens: 100,
       temperature: 0.2,
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
+      stop: stop,
     }
 
     const options = {
