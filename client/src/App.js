@@ -250,7 +250,24 @@ const App = () => {
         catDirection = 1
       }
       catY.current = catY.current + catSpeed * catDirection
-      ctx.drawImage(deadCatRef.current, 900, catY.current, imgW, imgH)
+      ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
+    } else if (catState === "fly_up") {
+      var catSpeed = 5
+      var catDirection = -1
+      setImageCatY((prev) => prev - (catSpeed - 2) * catDirection)
+      catY.current = catY.current + catSpeed * catDirection
+      if (catY.current < 0) {
+        setAnimationEnded(true)
+      }
+      ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
+    } else if (catState === "fire") {
+      var catSpeed = 5
+      var catDirection = 1
+      catY.current = catY.current + catSpeed * catDirection
+      ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
+      if (catY.current > ctx.canvas.height - catRef.current.height) {
+        setAnimationEnded(true)
+      }
     }
   }
 
@@ -331,6 +348,9 @@ const App = () => {
     console.log("endCase: ", endCase)
     setGameResults(getGameResult(endCase))
     console.log("updated gameResults: ", gameResults.gameEnded)
+    if (gameResults.gameEnded) {
+      playGameEndSound()
+    }
     // ============================================
 
     setLoading(false)
@@ -623,7 +643,7 @@ const App = () => {
   function renderGamePlayExplanation() {
     return (
       <div className="">
-        <h2 className="text-center mx-[24rem] mt-8 text-3xl">{processGPTExplanation(gamePlayExplanation)}</h2>
+        <h2 className="text-center mx-[24rem] mt-8 text-7xl">{processGPTExplanation(gamePlayExplanation)}</h2>
       </div>
     )
   }
@@ -631,8 +651,7 @@ const App = () => {
   function renderGameEnded() {
     return (
       <div className="">
-        <h1 className="text-6xl text-center">Game Ended</h1>
-        <h2 className="text-4xl text-center">{gameResults.playerWon ? "You Won!" : "You Lost!"}</h2>
+        <h1 className="text-9xl text-center">{gameResults.playerWon ? "You Won!" : "You Lost!"}</h1>
       </div>
     )
   }
@@ -650,6 +669,17 @@ const App = () => {
 
     return () => clearInterval(interval)
   }, [dots])
+  function playGameEndSound() {
+    const audio = new Audio()
+    if (gameResults.playerWon) {
+      audio.src = "../../server/assets/win.mp3"
+    }
+    else
+    {
+      audio.src = "../../server/assets/lose.wav"
+    }
+    audio.play()
+  }
 
   return (
     <div className="bg-sky-100 w-screen min-h-screen bg-no-repeat bg-cover bg-center overflow-hidden">
