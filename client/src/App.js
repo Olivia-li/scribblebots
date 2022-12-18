@@ -8,7 +8,7 @@ const client = new W3CWebSocket("ws://192.168.131.78:8000")
 
 const App = () => {
   const [image, setImage] = useState()
-  const [imagePosition, setImagePosition] = useState("tree")
+  const [imagePosition, setImagePosition] = useState()
   const [loading, setLoading] = useState(false)
   const [gameResults, setGameResults] = useState({ gameEnded: false, playerWon: false })
   const [animationEnded, setAnimationEnded] = useState(false)
@@ -21,6 +21,9 @@ const App = () => {
 
   const canvasRef = useRef(null)
   const treeRef = useRef(null)
+  const tree1Ref = useRef(null)
+  const tree2Ref = useRef(null)
+  const tree3Ref = useRef(null)
   const [treeState, setTreeState] = useState("static")
   const catRef = useRef(null)
   const fireRef = useRef(null)
@@ -36,7 +39,7 @@ const App = () => {
     }
   }, [catRef.current, canvasRef.current, treeRef.current])
 
-  const NORM_FACTOR = 0.3
+  const NORM_FACTOR = 0.5
 
   const wsRefIsOpen = useRef(false)
   useEffect(() => {
@@ -85,16 +88,33 @@ const App = () => {
   }
 
   useEffect(() => {
-    if (treeRef.current) {
+    if (
+      treeRef.current &&
+      catRef.current &&
+      fireRef.current &&
+      tree1Ref.current &&
+      tree2Ref.current &&
+      tree3Ref.current
+    ) {
       return
     }
+
     let tree = new Image()
     tree.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree.png"
     treeRef.current = tree
 
-    if (catRef.current) {
-      return
-    }
+    let tree1 = new Image()
+    tree1.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree1.png"
+    tree1Ref.current = tree1
+
+    let tree2 = new Image()
+    tree2.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree2.png"
+    tree2Ref.current = tree2
+
+    let tree3 = new Image()
+    tree3.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/tree3.png"
+    tree3Ref.current = tree3
+
     var cat = new Image()
     cat.src = "https://dreamweaver-sd.s3.amazonaws.com/scribblenauts/cat.png"
     catRef.current = cat
@@ -104,6 +124,16 @@ const App = () => {
     fireRef.current = fire
   }, [])
 
+  useEffect(() => {
+    if (!canvasRef.current) {
+      return
+    }
+    if (wristPosition.rx / NORM_FACTOR > 0.7 && cutDownState < 3 && treeState === "cut_down") {
+      setCutDownState((prev) => prev + 1)
+    }
+  }, [wristPosition.rx])
+
+  const [cutDownState, setCutDownState] = useState(0)
   function drawTree(ctx) {
     if (!treeRef.current) {
       return
@@ -123,6 +153,22 @@ const App = () => {
         treeRef.current.width + 300,
         1300
       )
+    } else if (treeState === "cut_down") {
+      switch (cutDownState) {
+        case 0:
+          ctx.drawImage(treeRef.current, 800, ctx.canvas.height - 1300, treeRef.current.width + 300, 1300)
+          break
+        case 1:
+          ctx.drawImage(tree1Ref.current, 800, ctx.canvas.height - 1300, treeRef.current.width + 300, 1300)
+          break
+        case 2:
+          ctx.drawImage(tree2Ref.current, 800, ctx.canvas.height - 1300, treeRef.current.width + 300, 1300)
+          break
+        case 3:
+          ctx.drawImage(tree3Ref.current, 800, ctx.canvas.height - 1300, treeRef.current.width + 300, 1300)
+          setCatState("climb_down")
+          break
+      }
     }
   }
 
@@ -157,6 +203,9 @@ const App = () => {
       }
       ctx.drawImage(catRef.current, 900, catY.current, imgW, imgH)
     } else if (catState === "fire") {
+      if (catY.current > ctx.canvas.height) {
+        setAnimationEnded(true)
+      }
       var catSpeed = 5
       var catDirection = 1
       catY.current = catY.current + catSpeed * catDirection
@@ -166,6 +215,9 @@ const App = () => {
 
   const draw = useCallback(
     (ctx) => {
+      if (!ctx.canvas) {
+        return
+      }
       // Clear screen
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
@@ -178,7 +230,7 @@ const App = () => {
       // Draw cat
       drawCat(ctx)
     },
-    [wristPosition, personPosition, catState, treeState]
+    [wristPosition, personPosition, catState, treeState, cutDownState]
   )
 
   const throttledDraw = _.throttle(draw, 50)
