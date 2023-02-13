@@ -589,6 +589,7 @@ const App = () => {
   async function askGpt(prompt, model = "text-davinci-002", stop = null) {
     console.log("inside askGpt")
 
+    // Too lazy to remove. I've killed the API key. Don't even try
     const API_KEY = "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"
     const API_ENDPOINT = "https://api.openai.com/v1/completions"
 
